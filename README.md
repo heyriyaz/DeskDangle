@@ -93,5 +93,7 @@ release/
 ---
 
 ## 📄 License & Credits
-Built with ❤️ by **Riyaz** ([@heyriyaz](https://github.com/heyriyaz)).
+- **Created with ❤️ by**: **Riyaz** ([@heyriyaz](https://github.com/heyriyaz)).
+- **Code Signing**: Free code signing provided by the [SignPath Foundation](https://signpath.org).
+- **License**: [MIT License](LICENSE).
 Copyright © 2026 DeskDangle. All rights reserved.
