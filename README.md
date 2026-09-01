@@ -1,8 +1,19 @@
 # DeskDangle 🪀
 
+[![Download DeskDangle for Windows](https://img.shields.io/badge/Download-DeskDangle%20v1.0.0%20(Windows)-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.0/DeskDangle-Setup-1.0.0.exe)
+[![Version](https://img.shields.io/badge/Release-v1.0.0-brightgreen?style=for-the-badge)](https://github.com/heyriyaz/DeskDangle/releases/tag/v1.0.0)
+
 **Tiny charms. A little life on your Windows desktop.**
 
-DeskDangle is a lightweight, interactive physics companion for Windows 10 and Windows 11. Cute, photorealistic charms hang from the top edge of your screen, swinging, bouncing, and reacting naturally with smooth Matter.js physics.
+DeskDangle is a lightweight, interactive desktop companion and physics charm for Windows 10 & 11. Photorealistic charms hang from the top edge of your screen, reacting naturally with buttery smooth Matter.js physics.
+
+---
+
+## 📥 Quick Download & Install (Windows 10 / 11)
+
+1. Download **[DeskDangle-Setup-1.0.0.exe](https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.0/DeskDangle-Setup-1.0.0.exe)** from [Releases](https://github.com/heyriyaz/DeskDangle/releases/tag/v1.0.0).
+2. Double-click to install. *(If Windows SmartScreen prompts on first run, click **More info** ➔ **Run anyway**).*
+3. Enjoy your desktop charm! Right-click or drag to swing.
 
 ---
 
