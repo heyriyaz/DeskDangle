@@ -1,0 +1,89 @@
+{
+  "name": "deskdangle",
+  "productName": "DeskDangle",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A playful desktop companion and interactive physics charm for Windows",
+  "author": "Riyaz (https://github.com/heyriyaz)",
+  "homepage": "https://github.com/heyriyaz/DeskDangle",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest run",
+    "preview": "vite preview",
+    "package": "npm run build && electron-builder",
+    "package:win": "npm run build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.deskdangle.desktop",
+    "productName": "DeskDangle",
+    "copyright": "Copyright © 2026 DeskDangle. All rights reserved.",
+    "compression": "maximum",
+    "electronLanguages": [
+      "en-US"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "build/icon.ico",
+      "package.json",
+      "!**/*.map",
+      "!**/*.ts",
+      "!**/*.tsx",
+      "!**/tests/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "DeskDangle",
+      "artifactName": "DeskDangle-Setup-${version}.${ext}",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "uninstallDisplayName": "DeskDangle ${version}",
+      "deleteAppDataOnUninstall": true,
+      "runAfterFinish": true
+    }
+  },
+
+  "dependencies": {
+    "matter-js": "^0.20.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/matter-js": "^0.19.6",
+    "@types/node": "^20.14.9",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "electron": "^31.0.2",
+    "electron-builder": "^26.15.3",
+    "typescript": "^5.5.2",
+    "vite": "^5.3.1",
+    "vite-plugin-electron": "^0.28.6",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vitest": "^4.1.11"
+  }
+}
+
