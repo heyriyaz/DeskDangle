@@ -4,8 +4,10 @@ import { SettingsStore } from './store';
 import { TrayManager } from './trayManager';
 import { DisplayManager } from './displayManager';
 import { ImageValidator } from './imageValidator';
+import { setAutoLaunch, cleanupDevStartupRegistry } from './autoLaunch';
 
-// Set Windows AppUserModelId for taskbar grouping, shortcuts, and notifications
+// Set app name and Windows AppUserModelId for taskbar grouping, shortcuts, and startup
+app.name = 'DeskDangle';
 app.setAppUserModelId('com.deskdangle.desktop');
 
 // Prevent multiple instances
@@ -133,13 +135,7 @@ function setupIPC(wm: WindowManager) {
       registerConfiguredShortcuts(wm);
     }
     if (newSettings.general?.launchAtStartup !== undefined) {
-      try {
-        app.setLoginItemSettings({
-          openAtLogin: Boolean(newSettings.general.launchAtStartup),
-        });
-      } catch (err) {
-        console.warn('[DeskDangle] Failed to set login item settings:', err);
-      }
+      setAutoLaunch(Boolean(newSettings.general.launchAtStartup));
     }
 
     return saved;
@@ -205,14 +201,26 @@ process.on('unhandledRejection', (reason) => {
 });
 
 app.whenReady().then(() => {
+  // Clean up any legacy dev startup entry in Windows registry
+  cleanupDevStartupRegistry();
+
   windowManager = new WindowManager(store, displayManager);
   windowManager.createOverlayWindow();
 
   setupIPC(windowManager);
 
-  // Always open settings window on app launch so user has instant visual interface
-  windowManager.openSettingsWindow();
+  // Sync auto-launch preference with OS for packaged builds
+  const initialSettings = store.getSettings();
+  if (initialSettings.general?.launchAtStartup) {
+    setAutoLaunch(true);
+  }
 
+  // If launched via Windows startup (--autostart), start quietly on the desktop.
+  // Otherwise, open the settings window so user has instant visual interface.
+  const isAutoStart = process.argv.includes('--autostart');
+  if (!isAutoStart) {
+    windowManager.openSettingsWindow();
+  }
 
   // Initialize System Tray
   trayManager = new TrayManager(store, {
@@ -238,6 +246,9 @@ app.whenReady().then(() => {
     },
     onOpenSettings: () => {
       windowManager!.openSettingsWindow();
+    },
+    onSettingsChanged: (updated) => {
+      broadcastSettings(updated);
     },
   });
 

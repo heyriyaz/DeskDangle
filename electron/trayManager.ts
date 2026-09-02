@@ -2,6 +2,7 @@ import { Tray, Menu, nativeImage, app } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { SettingsStore } from './store';
+import { setAutoLaunch } from './autoLaunch';
 
 export class TrayManager {
   private tray: Tray | null = null;
@@ -10,6 +11,7 @@ export class TrayManager {
   private onTogglePhysics: () => void;
   private onRandomCharm: () => void;
   private onOpenSettings: () => void;
+  private onSettingsChanged?: (settings: any) => void;
 
   constructor(
     store: SettingsStore,
@@ -18,6 +20,7 @@ export class TrayManager {
       onTogglePhysics: () => void;
       onRandomCharm: () => void;
       onOpenSettings: () => void;
+      onSettingsChanged?: (settings: any) => void;
     }
   ) {
     this.store = store;
@@ -25,6 +28,7 @@ export class TrayManager {
     this.onTogglePhysics = callbacks.onTogglePhysics;
     this.onRandomCharm = callbacks.onRandomCharm;
     this.onOpenSettings = callbacks.onOpenSettings;
+    this.onSettingsChanged = callbacks.onSettingsChanged;
     this.createTray();
   }
 
@@ -117,19 +121,14 @@ export class TrayManager {
         type: 'checkbox',
         checked: settings.general.launchAtStartup,
         click: (menuItem) => {
-          this.store.saveSettings({
+          const updated = this.store.saveSettings({
             general: {
               ...settings.general,
               launchAtStartup: menuItem.checked,
             },
           });
-          try {
-            app.setLoginItemSettings({
-              openAtLogin: menuItem.checked,
-            });
-          } catch (err) {
-            console.warn('[TrayManager] Failed to update login item settings:', err);
-          }
+          setAutoLaunch(menuItem.checked);
+          this.onSettingsChanged?.(updated);
         },
       },
       { type: 'separator' },

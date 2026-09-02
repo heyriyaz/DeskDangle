@@ -1,7 +1,7 @@
 {
   "name": "deskdangle",
   "productName": "DeskDangle",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "A playful desktop companion and interactive physics charm for Windows",
   "author": "Riyaz (https://github.com/heyriyaz)",
