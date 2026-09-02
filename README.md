@@ -1,6 +1,6 @@
 # DeskDangle 🪀
 
-[![Download DeskDangle for Windows](https://img.shields.io/badge/Download-DeskDangle%20v1.0.1%20(Windows)-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.1/DeskDangle-Setup-1.0.1.exe)
+[![Download DeskDangle for Windows](https://img.shields.io/badge/Download-DeskDangle%20v1.0.1%20(Windows%20.zip)-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.1/DeskDangle-v1.0.1-Windows.zip)
 [![Version](https://img.shields.io/badge/Release-v1.0.1-brightgreen?style=for-the-badge)](https://github.com/heyriyaz/DeskDangle/releases/tag/v1.0.1)
 
 **Tiny charms. A little life on your Windows desktop.**
@@ -11,8 +11,8 @@ DeskDangle is a lightweight, interactive desktop companion and physics charm for
 
 ## 📥 Quick Download & Install (Windows 10 / 11)
 
-1. Download **[DeskDangle-Setup-1.0.1.exe](https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.1/DeskDangle-Setup-1.0.1.exe)** from [Releases](https://github.com/heyriyaz/DeskDangle/releases/tag/v1.0.1).
-2. Double-click to install. *(If Windows SmartScreen prompts on first run, click **More info** ➔ **Run anyway**).*
+1. Download **[DeskDangle-v1.0.1-Windows.zip](https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.1/DeskDangle-v1.0.1-Windows.zip)** from [Releases](https://github.com/heyriyaz/DeskDangle/releases/tag/v1.0.1).
+2. Extract the zip and run **DeskDangle-Setup-1.0.1.exe** to install. *(If Windows SmartScreen prompts on first run, click **More info** ➔ **Run anyway**).*
 3. Enjoy your desktop charm! Right-click or drag to swing.
 
 ---
