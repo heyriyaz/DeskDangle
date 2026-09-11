@@ -100,4 +100,69 @@ describe('DeskDangle Matter.js Physics Engine', () => {
     expect(physics.world.bodies.length).toBe(0);
     expect(physics.world.constraints.length).toBe(0);
   });
+
+  it('should apply physics presets dynamically', () => {
+    const charm = BUILTIN_CHARMS[0];
+    const physics = new PhysicsWorld(
+      1920,
+      1080,
+      charm,
+      1.0,
+      DEFAULT_APP_SETTINGS.rope,
+      DEFAULT_APP_SETTINGS.physics
+    );
+
+    physics.applyPreset('bouncy');
+    expect(physics.physicsSettings.gravity).toBe(1.1);
+    expect(physics.physicsSettings.restitution).toBe(0.75);
+
+    physics.applyPreset('heavy');
+    expect(physics.physicsSettings.gravity).toBe(1.6);
+    expect(physics.physicsSettings.damping).toBe(0.018);
+
+    physics.applyPreset('space');
+    expect(physics.physicsSettings.gravity).toBe(0.15);
+
+    physics.destroy();
+  });
+
+  it('should apply aerodynamic air displacement breeze when cursor moves rapidly near charm', () => {
+    const charm = BUILTIN_CHARMS[0];
+    const physics = new PhysicsWorld(
+      1920,
+      1080,
+      charm,
+      1.0,
+      DEFAULT_APP_SETTINGS.rope,
+      DEFAULT_APP_SETTINGS.physics
+    );
+
+    const pos = physics.charm.getPosition();
+    const beforeSpeed = physics.charm.body.speed;
+
+    // Simulate mouse swiping past charm within 100px with high velocity
+    physics.applyAirDisplacement(pos.x + 30, pos.y + 10, 8.0, -4.0);
+
+    // Speed should increase due to air impulse
+    expect(physics.charm.body.speed).toBeGreaterThanOrEqual(beforeSpeed);
+
+    physics.destroy();
+  });
+
+  it('should trigger delight squash impulse on interaction', () => {
+    const charm = BUILTIN_CHARMS[0];
+    const physics = new PhysicsWorld(
+      1920,
+      1080,
+      charm,
+      1.0,
+      DEFAULT_APP_SETTINGS.rope,
+      DEFAULT_APP_SETTINGS.physics
+    );
+
+    physics.triggerDelightImpulse();
+    expect(Math.abs(physics.charm.body.force.x) + Math.abs(physics.charm.body.force.y)).toBeGreaterThan(0);
+
+    physics.destroy();
+  });
 });

@@ -13,9 +13,13 @@ export interface InteractiveRect {
 
 function getAppIconPath(): string | undefined {
   const candidates = [
+    path.join(__dirname, '../build/icon.png'),
+    path.join(app.getAppPath(), 'build/icon.png'),
+    path.join(process.resourcesPath, 'build/icon.png'),
     path.join(__dirname, '../build/icon.ico'),
     path.join(app.getAppPath(), 'build/icon.ico'),
     path.join(process.resourcesPath, 'build/icon.ico'),
+    path.join(__dirname, '../public/tray-icon.png'),
     path.join(__dirname, '../dist/tray-icon.png'),
     path.join(app.getAppPath(), 'dist/tray-icon.png'),
   ];
@@ -35,7 +39,6 @@ export class WindowManager {
   private interactiveBounds: InteractiveRect[] = [];
   private isDragging = false;
   private hasActiveUI = false;
-  private hitTestTimer: NodeJS.Timeout | null = null;
 
   constructor(store: SettingsStore, displayManager: DisplayManager) {
     this.store = store;
@@ -68,13 +71,14 @@ export class WindowManager {
       frame: false,
       transparent: true,
       alwaysOnTop: true,
-      focusable: false, // Never steals focus from active Windows applications
+      focusable: false, // Never steals focus from active applications
       hasShadow: false,
       resizable: false,
       maximizable: false,
       minimizable: false,
-      skipTaskbar: true, // Independent overlay does not clutter taskbar
+      skipTaskbar: true, // Independent overlay does not clutter taskbar / dock
       backgroundColor: '#00000000',
+      type: process.platform === 'darwin' ? 'panel' : undefined,
       webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
         contextIsolation: true,
@@ -85,8 +89,12 @@ export class WindowManager {
     });
 
     this.overlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-    // Use 'screen-saver' level so it stays permanently on top of all Windows applications & browsers
+    // Use 'screen-saver' level so it stays permanently on top of all applications & browsers
     this.overlayWindow.setAlwaysOnTop(true, 'screen-saver');
+
+    if (process.platform === 'darwin') {
+      this.overlayWindow.setHiddenInMissionControl(true);
+    }
 
     // Immediately start in click-through mode so the desktop is never blocked!
     this.isMouseIgnored = true;
@@ -116,69 +124,90 @@ export class WindowManager {
     return this.overlayWindow;
   }
 
+  private hitTestTimeout: NodeJS.Timeout | null = null;
+
   /**
-   * Continuous cursor hit testing loop for flawless click-through on Windows & macOS.
+   * Adaptive cursor hit testing loop for flawless click-through on Windows & macOS.
+   * Scales dynamically between 16ms (close proximity) and 100ms (far away) to save CPU & battery.
    */
   private startCursorHitTesting(): void {
     this.stopCursorHitTesting();
 
-    this.hitTestTimer = setInterval(() => {
-      if (!this.overlayWindow || this.overlayWindow.isDestroyed()) return;
-      if (!this.overlayWindow.isVisible()) return;
+    const tick = () => {
+      let nextDelay = 35;
 
-      // If user is actively dragging charm or interacting with open menu/drawer, keep mouse enabled
-      if (this.isDragging || this.hasActiveUI) {
-        this.setIgnoreMouseEvents(false);
-        return;
-      }
+      if (this.overlayWindow && !this.overlayWindow.isDestroyed() && this.overlayWindow.isVisible()) {
+        if (this.isDragging || this.hasActiveUI) {
+          this.setIgnoreMouseEvents(false);
+          nextDelay = 16;
+        } else {
+          const settings = this.store.getSettings();
+          if (!settings.general.clickThroughEnabled) {
+            this.setIgnoreMouseEvents(false);
+            nextDelay = 50;
+          } else {
+            const cursor = screen.getCursorScreenPoint();
+            const bounds = this.overlayWindow.getBounds();
 
-      const settings = this.store.getSettings();
-      // If click-through is explicitly disabled in user settings, keep mouse events enabled
-      if (!settings.general.clickThroughEnabled) {
-        this.setIgnoreMouseEvents(false);
-        return;
-      }
+            if (
+              cursor.x < bounds.x ||
+              cursor.x > bounds.x + bounds.width ||
+              cursor.y < bounds.y ||
+              cursor.y > bounds.y + bounds.height
+            ) {
+              this.setIgnoreMouseEvents(true);
+              nextDelay = 100;
+            } else {
+              const relX = cursor.x - bounds.x;
+              const relY = cursor.y - bounds.y;
 
-      const cursor = screen.getCursorScreenPoint();
-      const bounds = this.overlayWindow.getBounds();
+              let isInsideInteractive = false;
+              let minDistance = Infinity;
 
-      // Check if cursor is on this display
-      if (
-        cursor.x < bounds.x ||
-        cursor.x > bounds.x + bounds.width ||
-        cursor.y < bounds.y ||
-        cursor.y > bounds.y + bounds.height
-      ) {
-        this.setIgnoreMouseEvents(true);
-        return;
-      }
+              for (const rect of this.interactiveBounds) {
+                const cx = rect.x + rect.width / 2;
+                const cy = rect.y + rect.height / 2;
+                const dist = Math.hypot(relX - cx, relY - cy);
+                if (dist < minDistance) minDistance = dist;
 
-      const relX = cursor.x - bounds.x;
-      const relY = cursor.y - bounds.y;
+                if (
+                  relX >= rect.x &&
+                  relX <= rect.x + rect.width &&
+                  relY >= rect.y &&
+                  relY <= rect.y + rect.height
+                ) {
+                  isInsideInteractive = true;
+                  break;
+                }
+              }
 
-      let isInsideInteractive = false;
-      for (const rect of this.interactiveBounds) {
-        if (
-          relX >= rect.x &&
-          relX <= rect.x + rect.width &&
-          relY >= rect.y &&
-          relY <= rect.y + rect.height
-        ) {
-          isInsideInteractive = true;
-          break;
+              this.setIgnoreMouseEvents(!isInsideInteractive);
+
+              // Adaptive timing: fast when close, power-efficient when far
+              if (isInsideInteractive) {
+                nextDelay = 16;
+              } else if (minDistance < 140) {
+                nextDelay = 25;
+              } else if (minDistance < 350) {
+                nextDelay = 60;
+              } else {
+                nextDelay = 100;
+              }
+            }
+          }
         }
       }
 
-      // If mouse is inside any interactive zone (charm, rope, anchor, popup), enable mouse events.
-      // Otherwise, pass through seamlessly to the OS!
-      this.setIgnoreMouseEvents(!isInsideInteractive);
-    }, 25); // 40 Hz check with negligible CPU usage
+      this.hitTestTimeout = setTimeout(tick, nextDelay);
+    };
+
+    tick();
   }
 
   private stopCursorHitTesting(): void {
-    if (this.hitTestTimer) {
-      clearInterval(this.hitTestTimer);
-      this.hitTestTimer = null;
+    if (this.hitTestTimeout) {
+      clearTimeout(this.hitTestTimeout);
+      this.hitTestTimeout = null;
     }
   }
 
@@ -255,8 +284,15 @@ export class WindowManager {
 
     this.settingsWindow.setMenu(null);
 
+    if (process.platform === 'darwin' && app.dock) {
+      app.dock.show();
+    }
+
     this.settingsWindow.on('closed', () => {
       this.settingsWindow = null;
+      if (process.platform === 'darwin' && app.dock && this.overlayWindow && !this.overlayWindow.isDestroyed()) {
+        app.dock.hide();
+      }
     });
 
     return this.settingsWindow;

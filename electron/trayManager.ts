@@ -34,13 +34,17 @@ export class TrayManager {
 
   private createTrayIcon(): Electron.NativeImage {
     const potentialPaths = [
-      path.join(__dirname, '../build/icon.ico'),
-      path.join(app.getAppPath(), 'build/icon.ico'),
-      path.join(process.resourcesPath, 'build/icon.ico'),
       path.join(__dirname, '../public/tray-icon.png'),
       path.join(__dirname, '../dist/tray-icon.png'),
       path.join(app.getAppPath(), 'public/tray-icon.png'),
+      path.join(app.getAppPath(), 'dist/tray-icon.png'),
       path.join(process.resourcesPath, 'tray-icon.png'),
+      path.join(__dirname, '../build/icon.png'),
+      path.join(app.getAppPath(), 'build/icon.png'),
+      path.join(process.resourcesPath, 'build/icon.png'),
+      path.join(__dirname, '../build/icon.ico'),
+      path.join(app.getAppPath(), 'build/icon.ico'),
+      path.join(process.resourcesPath, 'build/icon.ico'),
     ];
 
     for (const p of potentialPaths) {
@@ -48,7 +52,8 @@ export class TrayManager {
         try {
           const img = nativeImage.createFromPath(p);
           if (!img.isEmpty()) {
-            return img.resize({ width: 16, height: 16 });
+            const size = process.platform === 'darwin' ? 18 : 16;
+            return img.resize({ width: size, height: size });
           }
         } catch (err) {
           console.warn('[TrayManager] Failed to load tray icon from path:', p, err);
@@ -94,7 +99,7 @@ export class TrayManager {
 
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: 'DeskDangle v1.0.0',
+        label: 'DeskDangle v1.0.1',
         enabled: false,
       },
       { type: 'separator' },
@@ -117,7 +122,7 @@ export class TrayManager {
       },
       { type: 'separator' },
       {
-        label: 'Start with Windows',
+        label: process.platform === 'darwin' ? 'Start at Login' : 'Start with Windows',
         type: 'checkbox',
         checked: settings.general.launchAtStartup,
         click: (menuItem) => {

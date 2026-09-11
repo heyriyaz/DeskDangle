@@ -1,7 +1,7 @@
 import Matter from 'matter-js';
 import { CharmPhysics } from './CharmPhysics';
 import { RopePhysics } from './RopePhysics';
-import { Charm, PhysicsSettings, RopeSettings } from '../charms/charmTypes';
+import { Charm, PhysicsPreset, PhysicsSettings, RopeSettings } from '../charms/charmTypes';
 import { soundEffects } from '../audio/SoundEffects';
 import { clientSettings } from '../store/settingsStore';
 
@@ -10,6 +10,53 @@ export interface DragSample {
   y: number;
   time: number;
 }
+
+export const PHYSICS_PRESETS: Record<Exclude<PhysicsPreset, 'custom'>, PhysicsSettings> = {
+  classic: {
+    gravity: 1.0,
+    damping: 0.007,
+    swingIntensity: 1.0,
+    windStrength: 1.0,
+    idleEnabled: true,
+    interactionStiffness: 0.35,
+    restitution: 0.35,
+    airDisplacement: true,
+    preset: 'classic',
+  },
+  bouncy: {
+    gravity: 1.1,
+    damping: 0.002,
+    swingIntensity: 1.5,
+    windStrength: 1.2,
+    idleEnabled: true,
+    interactionStiffness: 0.45,
+    restitution: 0.75,
+    airDisplacement: true,
+    preset: 'bouncy',
+  },
+  heavy: {
+    gravity: 1.6,
+    damping: 0.018,
+    swingIntensity: 0.6,
+    windStrength: 0.4,
+    idleEnabled: true,
+    interactionStiffness: 0.25,
+    restitution: 0.15,
+    airDisplacement: true,
+    preset: 'heavy',
+  },
+  space: {
+    gravity: 0.15,
+    damping: 0.003,
+    swingIntensity: 1.8,
+    windStrength: 0.8,
+    idleEnabled: true,
+    interactionStiffness: 0.2,
+    restitution: 0.6,
+    airDisplacement: true,
+    preset: 'space',
+  },
+};
 
 export class PhysicsWorld {
   public engine: Matter.Engine;
@@ -103,6 +150,23 @@ export class PhysicsWorld {
       ropeSettings || currentSettings.rope
     );
 
+    // 4. Collision listener for soft boundary wall impact audio
+    Matter.Events.on(this.engine, 'collisionStart', (event) => {
+      for (const pair of event.pairs) {
+        const isCharmA = pair.bodyA === this.charm.body;
+        const isCharmB = pair.bodyB === this.charm.body;
+        if (isCharmA || isCharmB) {
+          const other = isCharmA ? pair.bodyB : pair.bodyA;
+          if (other === this.leftWall || other === this.rightWall || other === this.bottomWall) {
+            const speed = this.charm.getSpeed();
+            if (speed > 1.2) {
+              soundEffects.playWallBumpSound(Math.min(1.0, speed / 5));
+            }
+          }
+        }
+      }
+    });
+
     this.updatePhysicsSettings(this.physicsSettings);
   }
 
@@ -129,7 +193,7 @@ export class PhysicsWorld {
   }
 
   /**
-   * Ultra-smooth physics step with 120Hz substepping accumulator
+   * Ultra-smooth physics step with 120Hz substepping (or 60Hz in Eco Mode)
    */
   public step(currentTime?: number): void {
     if (this.isPaused) return;
@@ -140,8 +204,10 @@ export class PhysicsWorld {
 
     if (dt <= 0) return;
 
-    // 120 Hz fixed sub-step (8.33ms) for buttery smooth chain physics
-    const subStep = 1000 / 120;
+    const generalSettings = clientSettings.getSettings().general;
+    // In Eco Mode, run 60Hz sub-stepping for power savings; otherwise 120Hz for silky physics
+    const targetHz = generalSettings.ecoMode ? 60 : 120;
+    const subStep = 1000 / targetHz;
     this.accumulator += dt;
 
     while (this.accumulator >= subStep) {
@@ -160,12 +226,13 @@ export class PhysicsWorld {
       Matter.Body.setPosition(this.dragBody, this.currentDragPos);
     }
 
-    // 2. Continuous Organic Idle Wind
+    // 2. Continuous Organic Idle Wind (paused when in eco mode if settled)
     if (
       !this.isDragging &&
       this.physicsSettings.idleEnabled &&
       !generalSettings.reduceMotion &&
-      this.physicsSettings.windStrength > 0
+      this.physicsSettings.windStrength > 0 &&
+      !(generalSettings.ecoMode && this.isSettled())
     ) {
       const t = now * 0.001;
       const windMul = this.physicsSettings.windStrength;
@@ -188,6 +255,62 @@ export class PhysicsWorld {
     }
 
     Matter.Engine.update(this.engine, deltaMs);
+  }
+
+  /**
+   * Checks whether the charm has reached resting equilibrium (quiescent state)
+   */
+  public isSettled(): boolean {
+    if (this.isDragging) return false;
+    const vel = this.charm.body.velocity;
+    const speedSq = vel.x * vel.x + vel.y * vel.y;
+    const angVel = Math.abs(this.charm.body.angularVelocity);
+    return speedSq < 0.0009 && angVel < 0.001;
+  }
+
+  /**
+   * Applies aerodynamic breeze push when user moves their cursor quickly near the charm
+   */
+  public applyAirDisplacement(cursorX: number, cursorY: number, vx: number, vy: number): void {
+    if (this.physicsSettings.airDisplacement === false || this.isDragging || this.isPaused) return;
+
+    const cursorSpeed = Math.hypot(vx, vy);
+    if (cursorSpeed < 0.4) return; // Skip very slow movements
+
+    const charmPos = this.charm.getPosition();
+    const dist = Math.hypot(cursorX - charmPos.x, cursorY - charmPos.y);
+    const maxRange = 150;
+
+    if (dist < maxRange) {
+      const proximity = 1 - dist / maxRange;
+      const forceScale =
+        0.00028 * proximity * Math.min(cursorSpeed, 4.5) * (this.physicsSettings.swingIntensity || 1.0);
+      const fx = vx * forceScale;
+      const fy = vy * forceScale * 0.4;
+      this.charm.applyForce({ x: fx, y: fy });
+    }
+  }
+
+  /**
+   * Triggers a joyful physical squash/bounce reaction
+   */
+  public triggerDelightImpulse(): void {
+    if (this.isPaused) return;
+    const dir = Math.random() > 0.5 ? 1 : -1;
+    const intensity = this.physicsSettings.swingIntensity || 1.0;
+    this.charm.applyForce({
+      x: dir * 0.006 * intensity,
+      y: -0.005 * intensity,
+    });
+  }
+
+  /**
+   * Apply predefined physics presets
+   */
+  public applyPreset(preset: PhysicsPreset): void {
+    if (preset !== 'custom' && PHYSICS_PRESETS[preset]) {
+      this.updatePhysicsSettings(PHYSICS_PRESETS[preset]);
+    }
   }
 
   public isPointOnCharm(x: number, y: number): boolean {

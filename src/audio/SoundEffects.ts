@@ -4,6 +4,7 @@ class SoundEffectsManager {
   private ctx: AudioContext | null = null;
 
   private getAudioContext(): AudioContext | null {
+    if (typeof window === 'undefined') return null;
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioCtx) {
@@ -153,6 +154,102 @@ class SoundEffectsManager {
       osc.start(startTime);
       osc.stop(startTime + 0.24);
     });
+  }
+
+  /**
+   * Sparkling ascending arpeggio chime for double-tap delight burst
+   */
+  public playDelightChime(): void {
+    const { allowed, volume } = this.isSoundAllowed();
+    if (!allowed) return;
+
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
+
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+    notes.forEach((freq, index) => {
+      const startTime = ctx.currentTime + index * 0.045;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+
+      gain.gain.setValueAtTime(0.001, startTime);
+      gain.gain.linearRampToValueAtTime(0.11 * volume, startTime + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.25);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.26);
+    });
+  }
+
+  /**
+   * Soft acoustic thud for boundary wall bounce
+   */
+  public playWallBumpSound(intensity = 0.5): void {
+    const settings = clientSettings.getSettings();
+    if (settings.sound.wallImpactSounds === false) return;
+
+    const { allowed, volume } = this.isSoundAllowed();
+    if (!allowed) return;
+
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(140, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(45, ctx.currentTime + 0.08);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(280, ctx.currentTime);
+
+    const bumpVol = Math.min(0.09 * volume * Math.max(0.3, intensity), 0.14);
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(bumpVol, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.09);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.1);
+  }
+
+  /**
+   * Soft metallic tinkling sound for chain movements
+   */
+  public playChainClinkSound(): void {
+    const { allowed, volume } = this.isSoundAllowed();
+    if (!allowed) return;
+
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    const freq = 1800 + Math.random() * 800;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.04 * volume, ctx.currentTime + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.06);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.07);
   }
 }
 

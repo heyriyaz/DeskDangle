@@ -23,7 +23,8 @@ export const AppearanceTab: React.FC = () => {
 
   // Creator state
   const [customImageName, setCustomImageName] = useState('');
-  const [customImageFraming, setCustomImageFraming] = useState<'contour' | 'acrylic' | 'badge'>('contour');
+  const [customImageFraming, setCustomImageFraming] = useState<'contour' | 'acrylic' | 'badge' | 'sticker'>('contour');
+  const [packFeedback, setPackFeedback] = useState<string | null>(null);
 
   const [customImagePreview, setCustomImagePreview] = useState<string | null>(null);
   const [customImageScale, setCustomImageScale] = useState(1.0);
@@ -31,6 +32,48 @@ export const AppearanceTab: React.FC = () => {
 
   const allCharms = CharmRegistry.getAllCharms();
   const activeCharm = CharmRegistry.getCharmById(settings.selectedCharmId);
+
+  const handleExportPack = async () => {
+    const customCharms = [...(settings.customCharms || []), ...(settings.customEmojis || [])];
+    if (customCharms.length === 0) {
+      setPackFeedback('No custom charms to export yet! Create one first.');
+      setTimeout(() => setPackFeedback(null), 3500);
+      return;
+    }
+
+    if (window.electronAPI?.exportCharmPack) {
+      const res = await window.electronAPI.exportCharmPack(customCharms);
+      if (res.success) {
+        soundEffects.playDelightChime();
+        setPackFeedback('Charm Pack exported successfully!');
+      } else if (res.error && res.error !== 'Export canceled') {
+        setPackFeedback(`Export failed: ${res.error}`);
+      }
+      setTimeout(() => setPackFeedback(null), 3500);
+    }
+  };
+
+  const handleImportPack = async () => {
+    if (window.electronAPI?.importCharmPack) {
+      const res = await window.electronAPI.importCharmPack();
+      if (res.success && res.pack && Array.isArray(res.pack.charms)) {
+        const incoming = res.pack.charms as Charm[];
+        const currentCustoms = settings.customCharms || [];
+        const existingIds = new Set(currentCustoms.map((c) => c.id));
+        const newOnes = incoming.filter((c) => !existingIds.has(c.id));
+        const merged = [...currentCustoms, ...newOnes];
+        updateSettings({
+          customCharms: merged,
+          selectedCharmId: incoming[0]?.id || settings.selectedCharmId,
+        });
+        soundEffects.playDelightChime();
+        setPackFeedback(`Imported ${incoming.length} charm(s) from "${res.pack.name || 'Pack'}"!`);
+      } else if (res.error && res.error !== 'Import canceled') {
+        setPackFeedback(`Import failed: ${res.error}`);
+      }
+      setTimeout(() => setPackFeedback(null), 3500);
+    }
+  };
 
   const filteredCharms = allCharms.filter((c) => {
     if (categoryFilter === 'all') return true;
@@ -334,11 +377,12 @@ export const AppearanceTab: React.FC = () => {
 
                     <div className="apple-form-col">
                       <label className="apple-field-label">Framing Style</label>
-                      <SettingsSegmented<'contour' | 'acrylic' | 'badge'>
+                      <SettingsSegmented<'contour' | 'sticker' | 'acrylic' | 'badge'>
                         options={[
-                          { id: 'contour', label: 'Transparent Cutout' },
-                          { id: 'acrylic', label: 'Acrylic Keychain' },
-                          { id: 'badge', label: 'Medallion Badge' },
+                          { id: 'contour', label: 'Cutout' },
+                          { id: 'sticker', label: 'Sticker' },
+                          { id: 'acrylic', label: 'Acrylic' },
+                          { id: 'badge', label: 'Badge' },
                         ]}
                         value={customImageFraming}
                         onChange={(f) => setCustomImageFraming(f)}
@@ -381,12 +425,50 @@ export const AppearanceTab: React.FC = () => {
               )}
             </div>
 
-            {/* Existing Uploaded Charms List */}
+            {/* Pack Feedback Banner */}
+            {packFeedback && (
+              <div
+                style={{
+                  padding: '8px 14px',
+                  backgroundColor: 'rgba(52, 199, 89, 0.15)',
+                  border: '1px solid rgba(52, 199, 89, 0.3)',
+                  borderRadius: '8px',
+                  color: '#34c759',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  margin: '12px 16px 0 16px',
+                }}
+              >
+                {packFeedback}
+              </div>
+            )}
+
+            {/* Existing Uploaded Charms List & Pack Sharing */}
             {((settings.customCharms?.length || 0) > 0 || (settings.customEmojis?.length || 0) > 0) && (
               <div className="apple-custom-list-section">
-                <div className="apple-creator-title">
-                  <span>Your Uploaded Charms</span>
-                  <span className="apple-badge-count">{(settings.customCharms?.length || 0) + (settings.customEmojis?.length || 0)}</span>
+                <div className="apple-creator-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>Your Uploaded Charms</span>
+                    <span className="apple-badge-count">{(settings.customCharms?.length || 0) + (settings.customEmojis?.length || 0)}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      className="apple-btn-secondary apple-btn-sm"
+                      onClick={handleExportPack}
+                      title="Export charms as shareable .dangle pack"
+                    >
+                      Export .dangle
+                    </button>
+                    <button
+                      type="button"
+                      className="apple-btn-secondary apple-btn-sm"
+                      onClick={handleImportPack}
+                      title="Import charms from .dangle pack"
+                    >
+                      Import Pack
+                    </button>
+                  </div>
                 </div>
                 <div className="apple-custom-charms-grid">
                   {[...(settings.customCharms || []), ...(settings.customEmojis || [])].map((c) => (
@@ -396,7 +478,7 @@ export const AppearanceTab: React.FC = () => {
                         <div className="apple-custom-card-info">
                           <span className="apple-custom-card-name">{c.name}</span>
                           <span className="apple-custom-card-type">
-                            {c.framing === 'acrylic' ? 'Acrylic' : c.framing === 'badge' ? 'Medallion' : 'Cutout'}
+                            {c.framing === 'sticker' ? 'Sticker' : c.framing === 'acrylic' ? 'Acrylic' : c.framing === 'badge' ? 'Medallion' : 'Cutout'}
                           </span>
                         </div>
                       </div>
@@ -414,6 +496,18 @@ export const AppearanceTab: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {((settings.customCharms?.length || 0) === 0 && (settings.customEmojis?.length || 0) === 0) && (
+              <div style={{ padding: '8px 16px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="apple-btn-secondary apple-btn-sm"
+                  onClick={handleImportPack}
+                >
+                  Import .dangle Pack
+                </button>
               </div>
             )}
           </div>

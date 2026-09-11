@@ -18,6 +18,8 @@ export interface ElectronAPI {
     dataUrl: string,
     charmId: string
   ) => Promise<{ valid: boolean; error?: string; sanitizedDataUrl?: string }>;
+  exportCharmPack: (charms: any[]) => Promise<{ success: boolean; filePath?: string; error?: string }>;
+  importCharmPack: () => Promise<{ success: boolean; pack?: any; error?: string }>;
   onSettingsUpdated: (callback: (settings: DangleSettings) => void) => () => void;
   openSettings: () => void;
   getDisplays: () => Promise<DisplayInfo[]>;
@@ -40,6 +42,8 @@ const electronAPI: ElectronAPI = {
   deleteCustomCharms: () => ipcRenderer.invoke('delete-custom-charms'),
   uploadCustomImage: (dataUrl: string, charmId: string) =>
     ipcRenderer.invoke('upload-custom-image', dataUrl, charmId),
+  exportCharmPack: (charms: any[]) => ipcRenderer.invoke('export-charm-pack', charms),
+  importCharmPack: () => ipcRenderer.invoke('import-charm-pack'),
   onSettingsUpdated: (callback: (settings: DangleSettings) => void) => {
     const subscription = (_event: unknown, settings: DangleSettings) => callback(settings);
     ipcRenderer.on('settings-updated', subscription);
@@ -96,7 +100,6 @@ const electronAPI: ElectronAPI = {
   },
   isElectron: true,
 };
-
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 

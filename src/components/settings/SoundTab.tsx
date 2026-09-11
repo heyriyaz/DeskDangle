@@ -47,12 +47,27 @@ export const SoundTab: React.FC = () => {
               />
             </SettingsRow>
 
+            {/* Wall Impact Audio Toggle */}
+            <SettingsRow
+              label="Wall Impact Thud"
+              subtitle="Play soft bass bounce when charm impacts screen boundary"
+            >
+              <SettingsToggle
+                checked={settings.sound.wallImpactSounds !== false}
+                onChange={(wallImpactSounds) =>
+                  updateSettings({
+                    sound: { ...settings.sound, wallImpactSounds },
+                  })
+                }
+              />
+            </SettingsRow>
+
             {/* Sound Previews */}
             <SettingsRow
               label="Preview Effects"
-              subtitle="Test generated audio waveforms"
+              subtitle="Test synthesized procedural acoustic waveforms"
             >
-              <div className="apple-sound-preview-buttons">
+              <div className="apple-sound-preview-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 <button
                   type="button"
                   className="apple-btn-secondary apple-btn-sm"
@@ -77,9 +92,23 @@ export const SoundTab: React.FC = () => {
                 <button
                   type="button"
                   className="apple-btn-secondary apple-btn-sm"
-                  onClick={() => soundEffects.playCharmSwitchSound()}
+                  onClick={() => soundEffects.playWallBumpSound()}
                 >
-                  Switch
+                  Wall Thud
+                </button>
+                <button
+                  type="button"
+                  className="apple-btn-secondary apple-btn-sm"
+                  onClick={() => soundEffects.playChainClinkSound()}
+                >
+                  Chain Clink
+                </button>
+                <button
+                  type="button"
+                  className="apple-btn-secondary apple-btn-sm"
+                  onClick={() => soundEffects.playDelightChime()}
+                >
+                  ✨ Chime
                 </button>
               </div>
             </SettingsRow>

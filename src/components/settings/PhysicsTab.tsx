@@ -4,23 +4,69 @@ import { SettingsGroup } from './ui/SettingsGroup';
 import { SettingsRow } from './ui/SettingsRow';
 import { SettingsSlider } from './ui/SettingsSlider';
 import { SettingsToggle } from './ui/SettingsToggle';
+import { SettingsSegmented, SegmentOption } from './ui/SettingsSegmented';
+import { PhysicsPreset } from '../../charms/charmTypes';
+import { PHYSICS_PRESETS } from '../../physics/PhysicsWorld';
+
+const PRESET_OPTIONS: SegmentOption<PhysicsPreset>[] = [
+  { id: 'classic', label: 'Classic' },
+  { id: 'bouncy', label: 'Bouncy' },
+  { id: 'heavy', label: 'Heavy' },
+  { id: 'space', label: 'Zero-G' },
+];
 
 export const PhysicsTab: React.FC = () => {
   const [settings, updateSettings] = useDangleSettings();
 
+  const handleSelectPreset = (preset: PhysicsPreset) => {
+    if (preset !== 'custom' && PHYSICS_PRESETS[preset]) {
+      updateSettings({
+        physics: {
+          ...settings.physics,
+          ...PHYSICS_PRESETS[preset],
+          preset,
+        },
+      });
+    } else {
+      updateSettings({
+        physics: {
+          ...settings.physics,
+          preset: 'custom',
+        },
+      });
+    }
+  };
+
   const handleResetPhysics = () => {
-    updateSettings({ physics: { ...DEFAULT_APP_SETTINGS.physics } });
+    updateSettings({
+      physics: { ...DEFAULT_APP_SETTINGS.physics },
+      sound: {
+        ...settings.sound,
+        wallImpactSounds: true,
+      },
+    });
   };
 
   return (
     <div className="apple-settings-page">
       <div className="apple-page-header">
         <h1 className="apple-page-title">Physics</h1>
-        <p className="apple-page-subtitle">Control gravity, momentum, and simulated desktop motion.</p>
+        <p className="apple-page-subtitle">Control gravity, momentum, aerodynamic breeze, and motion styles.</p>
       </div>
 
+      {/* PRESETS GROUP */}
+      <SettingsGroup title="Physics Preset">
+        <SettingsRow label="Profile" subtitle="Pre-tuned physical dynamic behaviors">
+          <SettingsSegmented
+            options={PRESET_OPTIONS}
+            value={settings.physics.preset || 'classic'}
+            onChange={handleSelectPreset}
+          />
+        </SettingsRow>
+      </SettingsGroup>
+
       {/* MOTION GROUP */}
-      <SettingsGroup title="Motion">
+      <SettingsGroup title="Motion Parameters">
         {/* Gravity */}
         <SettingsRow label="Gravity" subtitle="Downward gravitational pull">
           <SettingsSlider
@@ -31,7 +77,11 @@ export const PhysicsTab: React.FC = () => {
             formatValue={(v) => `${v.toFixed(2)}x`}
             leftLabel="Floaty"
             rightLabel="Heavy"
-            onChange={(gravity) => updateSettings({ physics: { ...settings.physics, gravity } })}
+            onChange={(gravity) =>
+              updateSettings({
+                physics: { ...settings.physics, gravity, preset: 'custom' },
+              })
+            }
           />
         </SettingsRow>
 
@@ -45,7 +95,11 @@ export const PhysicsTab: React.FC = () => {
             formatValue={(v) => `${Math.round((v / 0.025) * 100)}%`}
             leftLabel="Perpetual"
             rightLabel="Quick Settle"
-            onChange={(damping) => updateSettings({ physics: { ...settings.physics, damping } })}
+            onChange={(damping) =>
+              updateSettings({
+                physics: { ...settings.physics, damping, preset: 'custom' },
+              })
+            }
           />
         </SettingsRow>
 
@@ -60,7 +114,9 @@ export const PhysicsTab: React.FC = () => {
             leftLabel="Gentle"
             rightLabel="High"
             onChange={(swingIntensity) =>
-              updateSettings({ physics: { ...settings.physics, swingIntensity } })
+              updateSettings({
+                physics: { ...settings.physics, swingIntensity, preset: 'custom' },
+              })
             }
           />
         </SettingsRow>
@@ -76,20 +132,52 @@ export const PhysicsTab: React.FC = () => {
             leftLabel="Calm"
             rightLabel="Breezy"
             onChange={(windStrength) =>
-              updateSettings({ physics: { ...settings.physics, windStrength } })
+              updateSettings({
+                physics: { ...settings.physics, windStrength, preset: 'custom' },
+              })
+            }
+          />
+        </SettingsRow>
+
+        {/* Air Displacement Breeze */}
+        <SettingsRow
+          label="Air Displacement"
+          subtitle="Swish charm when cursor passes rapidly nearby"
+        >
+          <SettingsToggle
+            checked={settings.physics.airDisplacement !== false}
+            onChange={(airDisplacement) =>
+              updateSettings({
+                physics: { ...settings.physics, airDisplacement },
+              })
             }
           />
         </SettingsRow>
 
         {/* Idle Movement Toggle */}
         <SettingsRow
-          label="Idle Movement"
+          label="Idle Sway"
           subtitle="Gently sway charm when cursor is away"
         >
           <SettingsToggle
             checked={settings.physics.idleEnabled}
             onChange={(idleEnabled) =>
               updateSettings({ physics: { ...settings.physics, idleEnabled } })
+            }
+          />
+        </SettingsRow>
+
+        {/* Wall Impact Audio */}
+        <SettingsRow
+          label="Wall Impact Feedback"
+          subtitle="Play soft acoustic thud when charm bumps screen edge"
+        >
+          <SettingsToggle
+            checked={settings.sound.wallImpactSounds !== false}
+            onChange={(wallImpactSounds) =>
+              updateSettings({
+                sound: { ...settings.sound, wallImpactSounds },
+              })
             }
           />
         </SettingsRow>
