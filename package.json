@@ -14,7 +14,10 @@
     "test": "vitest run",
     "preview": "vite preview",
     "package": "npm run build && electron-builder",
-    "package:win": "npm run build && electron-builder --win"
+    "package:win": "npm run build && electron-builder --win",
+    "package:mac": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac && codesign --force --deep -s - release/mac-arm64/DeskDangle.app && xattr -cr release/mac-arm64/DeskDangle.app",
+    "package:dmg": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg",
+    "package:zip": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac zip"
   },
   "build": {
     "appId": "com.deskdangle.desktop",
@@ -32,12 +35,42 @@
       "dist/**/*",
       "dist-electron/**/*",
       "build/icon.ico",
+      "build/icon.png",
       "package.json",
       "!**/*.map",
       "!**/*.ts",
       "!**/*.tsx",
       "!**/tests/**"
     ],
+    "mac": {
+      "target": [
+        "dir",
+        "dmg",
+        "zip"
+      ],
+      "identity": null,
+      "icon": "build/icon.png",
+      "category": "public.app-category.entertainment",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "artifactName": "DeskDangle-${version}-Mac.${ext}"
+    },
+    "dmg": {
+      "title": "DeskDangle ${version}",
+      "artifactName": "DeskDangle-${version}-Mac.dmg",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
     "win": {
       "target": [
         {

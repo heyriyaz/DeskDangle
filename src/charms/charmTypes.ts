@@ -19,7 +19,7 @@ export interface Charm {
   scale: number; // 0.6 to 1.6 (default: 1.0)
   anchorOffset: number; // distance from center to top eyelet
   renderType: CharmRenderType;
-  framing?: 'contour' | 'acrylic' | 'badge';
+  framing?: 'contour' | 'acrylic' | 'badge' | 'sticker';
   emojiData?: EmojiCharmData;
   imageDataUrl?: string;
   drawVector?: (
@@ -41,6 +41,8 @@ export interface RopeSettings {
   opacity: number; // 0.2 to 1.0
 }
 
+export type PhysicsPreset = 'classic' | 'bouncy' | 'heavy' | 'space' | 'custom';
+
 export interface PhysicsSettings {
   gravity: number; // 0.2 to 2.5 (default 1.0)
   damping: number; // 0.001 to 0.025 (default 0.007)
@@ -49,6 +51,8 @@ export interface PhysicsSettings {
   idleEnabled: boolean;
   interactionStiffness: number; // 0.1 to 0.8
   restitution: number; // 0.0 to 0.8
+  airDisplacement: boolean; // Reacts to fast mouse movement breeze
+  preset?: PhysicsPreset;
 }
 
 export interface ShortcutSettings {
@@ -62,6 +66,7 @@ export interface ShortcutSettings {
 export interface SoundSettings {
   enabled: boolean;
   volume: number; // 0.0 to 1.0
+  wallImpactSounds?: boolean;
 }
 
 export interface GeneralSettings {
@@ -72,8 +77,20 @@ export interface GeneralSettings {
   clickThroughEnabled: boolean;
   reduceMotion: boolean;
   onboardingCompleted: boolean;
-  doubleClickAction: 'quick-drawer' | 'settings' | 'random';
+  doubleClickAction: 'delight-burst' | 'quick-drawer' | 'settings' | 'random';
   anchorXPercent?: number; // 0.05 to 0.95 (default 0.5 for center)
+  ecoMode: boolean; // Low-power battery optimization mode
+  particlesEnabled: boolean; // Interactive delight particles on double-tap/flick
+  theme?: 'system' | 'dark' | 'light';
+}
+
+export interface DangleCharmPack {
+  formatVersion: number;
+  exportedAt: string;
+  appName: string;
+  charms: Charm[];
+  rope?: Partial<RopeSettings>;
+  physics?: Partial<PhysicsSettings>;
 }
 
 export interface DangleSettings {

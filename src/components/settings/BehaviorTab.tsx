@@ -65,27 +65,56 @@ export const BehaviorTab: React.FC = () => {
       </SettingsGroup>
 
       {/* INTERACTION GROUP */}
-      <SettingsGroup title="Interaction">
+      <SettingsGroup title="Interaction & Delight">
         <SettingsRow
           label="Double-Click Charm"
           subtitle="Action triggered when double-clicking the hanging charm"
         >
           <SettingsSegmented
             options={[
-              { id: 'quick-drawer', label: 'Quick Drawer' },
+              { id: 'delight-burst', label: '✨ Burst' },
+              { id: 'quick-drawer', label: 'Drawer' },
               { id: 'settings', label: 'Settings' },
               { id: 'random', label: 'Random' },
             ]}
-            value={settings.general.doubleClickAction}
+            value={settings.general.doubleClickAction || 'delight-burst'}
             onChange={(action) =>
               updateSettings({
                 general: {
                   ...settings.general,
-                  doubleClickAction: action as 'quick-drawer' | 'settings' | 'random',
+                  doubleClickAction: action as 'delight-burst' | 'quick-drawer' | 'settings' | 'random',
                 },
               })
             }
             size="sm"
+          />
+        </SettingsRow>
+
+        <SettingsRow
+          label="Sparkle Particle FX"
+          subtitle="Burst joyful stars and sparkles on interaction"
+        >
+          <SettingsToggle
+            checked={settings.general.particlesEnabled !== false}
+            onChange={(particlesEnabled) =>
+              updateSettings({
+                general: { ...settings.general, particlesEnabled },
+              })
+            }
+          />
+        </SettingsRow>
+
+        <SettingsRow
+          label="Eco Battery Saver"
+          subtitle="60Hz physics & quiescent resting mode for maximum MacBook battery longevity"
+        >
+          <SettingsToggle
+            checked={Boolean(settings.general.ecoMode)}
+            onChange={(ecoMode) =>
+              updateSettings({
+                general: { ...settings.general, ecoMode },
+              })
+            }
           />
         </SettingsRow>
 

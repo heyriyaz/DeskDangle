@@ -59,7 +59,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) 
               </div>
             </div>
             <p className="onboarding-desc">
-              DeskDangle hangs smoothly from the top of your Windows screen. Grab, drag, throw, and watch it swing with natural physical momentum.
+              DeskDangle hangs smoothly from the top of your screen. Grab, drag, throw, and watch it swing with natural physical momentum.
             </p>
           </div>
         )}
@@ -102,8 +102,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) 
                 />
               </div>
               <div className="onboarding-shortcuts-summary">
-                <div><code>Ctrl + Shift + D</code> Show / Hide DeskDangle</div>
-                <div><code>Ctrl + Shift + P</code> Pause / Resume Physics</div>
+                <div><code>⌥ / Alt + ⇧ + D</code> Show / Hide DeskDangle</div>
+                <div><code>⌥ / Alt + ⇧ + P</code> Pause / Resume Physics</div>
                 <div><code>Right-Click Charm</code> Quick menu & settings</div>
               </div>
             </div>

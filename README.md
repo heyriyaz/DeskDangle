@@ -3,14 +3,20 @@
 [![Download DeskDangle for Windows](https://img.shields.io/badge/Download-DeskDangle%20v1.0.1%20(Windows%20.zip)-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.1/DeskDangle-v1.0.1-Windows.zip)
 [![Version](https://img.shields.io/badge/Release-v1.0.1-brightgreen?style=for-the-badge)](https://github.com/heyriyaz/DeskDangle/releases/tag/v1.0.1)
 
-**Tiny charms. A little life on your Windows desktop.**
+**Tiny charms. A little life on your desktop.**
 
-DeskDangle is a lightweight, interactive desktop companion and physics charm for Windows 10 & 11. Photorealistic charms hang from the top edge of your screen, reacting naturally with buttery smooth Matter.js physics.
+DeskDangle is a lightweight, interactive desktop companion and physics charm for macOS & Windows (10/11). Photorealistic charms hang from the top edge of your screen, reacting naturally with buttery smooth Matter.js physics.
 
 ---
 
-## 📥 Quick Download & Install (Windows 10 / 11)
+## 📥 Quick Download & Install
 
+### macOS
+1. Download **`DeskDangle-1.0.1-Mac.dmg`** or **`DeskDangle-1.0.1-Mac.zip`** from [Releases](https://github.com/heyriyaz/DeskDangle/releases).
+2. Open the DMG and drag **DeskDangle.app** into your `/Applications` folder.
+3. Launch DeskDangle and enjoy your desktop companion!
+
+### Windows 10 / 11
 1. Download **[DeskDangle-v1.0.1-Windows.zip](https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.1/DeskDangle-v1.0.1-Windows.zip)** from [Releases](https://github.com/heyriyaz/DeskDangle/releases/tag/v1.0.1).
 2. Extract the zip and run **DeskDangle-Setup-1.0.1.exe** to install. *(If Windows SmartScreen prompts on first run, click **More info** ➔ **Run anyway**).*
 3. Enjoy your desktop charm! Right-click or drag to swing.
@@ -33,9 +39,9 @@ DeskDangle is a lightweight, interactive desktop companion and physics charm for
 - **🖼️ Custom Charm Studio**: Drag & drop any transparent PNG, JPG, WebP, or SVG to hang your own custom charms or logos with custom framing (Cutout, Acrylic, Medallion).
 - **🧵 Cord & Rope Customization**: Braided rope, Classic cord, Thread, Gold chain, or Glowing neon with adjustable length, thickness, and color.
 - **⚡ 60 FPS Physics Engine**: Powered by Matter.js with velocity throw momentum, gravity, damping, air resistance, and zero idle CPU usage.
-- **🪟 Seamless Desktop Overlay**: Transparent, frameless, and fully click-through so it never interferes with underlying Windows applications.
-- **🖥️ Multi-Monitor & High-DPI**: Smoothly handles monitor changes, resolution scaling, and mixed DPI (100% to 200%).
-- **🔔 Windows System Tray & Shortcuts**: Single-click settings access, right-click desktop quick menu, and customizable global hotkeys.
+- **🪟 Seamless Desktop Overlay**: Transparent, frameless, and fully click-through so it never interferes with underlying applications.
+- **🖥️ Multi-Monitor & High-DPI**: Smoothly handles monitor changes, resolution scaling, and mixed DPI (Retina / 100% to 200%).
+- **🔔 Menu Bar / System Tray & Shortcuts**: Single-click settings access, right-click desktop quick menu, and customizable global hotkeys.
 - **🔒 100% Private & Offline**: Zero analytics, zero telemetry, and zero network calls. All settings and custom charms remain strictly on your local machine.
 
 ---
@@ -44,12 +50,12 @@ DeskDangle is a lightweight, interactive desktop companion and physics charm for
 
 Global hotkeys can be toggled on or off in **Settings > Behavior** to prevent shortcut conflicts with other software:
 
-| Shortcut | Action |
+| Shortcut (macOS / Windows) | Action |
 | :--- | :--- |
-| `Alt + Shift + D` | Show / Hide DeskDangle |
-| `Alt + Shift + P` | Pause / Resume Physics |
-| `Alt + Shift + R` | Switch to Random Charm |
-| `Alt + Shift + S` | Open Settings Window |
+| `Option + Shift + D` / `Alt + Shift + D` | Show / Hide DeskDangle |
+| `Option + Shift + P` / `Alt + Shift + P` | Pause / Resume Physics |
+| `Option + Shift + R` / `Alt + Shift + R` | Switch to Random Charm |
+| `Option + Shift + S` / `Alt + Shift + S` | Open Settings Window |
 
 ---
 
@@ -57,7 +63,7 @@ Global hotkeys can be toggled on or off in **Settings > Behavior** to prevent sh
 
 ### Prerequisites
 - Node.js 18+
-- Windows 10 / 11
+- macOS 12+ or Windows 10/11
 
 ### Install Dependencies
 ```bash
@@ -77,6 +83,19 @@ npm run test
 ### Build Production Bundle
 ```bash
 npm run build
+```
+
+### Package macOS App & DMG
+```bash
+npm run package:mac
+```
+
+Output:
+```text
+release/
+├── DeskDangle-1.0.1-Mac.dmg
+├── DeskDangle-1.0.1-Mac.zip
+└── mac-arm64/DeskDangle.app
 ```
 
 ### Package Windows Installer (NSIS)

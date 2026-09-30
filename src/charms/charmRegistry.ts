@@ -397,7 +397,22 @@ export class CharmRegistry {
       return;
     }
 
-    if (framing === 'acrylic') {
+    if (framing === 'sticker') {
+      const pad = 8;
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(drawX - pad, drawY - pad, drawW + pad * 2, drawH + pad * 2, 14);
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 3;
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.stroke();
+      drawEyelet(ctx, Math.max(drawW, drawH) * 0.5 + pad);
+      ctx.restore();
+    } else if (framing === 'acrylic') {
       const pad = 6;
       ctx.save();
       ctx.beginPath();
@@ -407,7 +422,10 @@ export class CharmRegistry {
       ctx.lineWidth = 1.5;
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
       ctx.stroke();
+      drawEyelet(ctx, Math.max(drawW, drawH) * 0.5 + pad);
       ctx.restore();
+    } else {
+      drawEyelet(ctx, Math.max(drawW, drawH) * 0.5);
     }
 
     ctx.drawImage(img, drawX, drawY, drawW, drawH);

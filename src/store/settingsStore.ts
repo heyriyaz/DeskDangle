@@ -20,10 +20,13 @@ export const DEFAULT_APP_SETTINGS: DangleSettings = {
     idleEnabled: true,
     interactionStiffness: 0.35,
     restitution: 0.35,
+    airDisplacement: true,
+    preset: 'classic',
   },
   sound: {
     enabled: true,
     volume: 0.7,
+    wallImpactSounds: true,
   },
   shortcuts: {
     enabled: false,
@@ -39,8 +42,10 @@ export const DEFAULT_APP_SETTINGS: DangleSettings = {
     clickThroughEnabled: true,
     reduceMotion: false,
     onboardingCompleted: false,
-    doubleClickAction: 'quick-drawer',
+    doubleClickAction: 'delight-burst',
     anchorXPercent: 0.5,
+    ecoMode: false,
+    particlesEnabled: true,
   },
   customCharms: [],
   customEmojis: [],
@@ -109,9 +114,9 @@ class ClientSettingsManager {
     };
 
     // Save to Electron
-    if (window.electronAPI?.saveSettings) {
+    if (typeof window !== 'undefined' && window.electronAPI?.saveSettings) {
       window.electronAPI.saveSettings(this.currentSettings);
-    } else {
+    } else if (typeof localStorage !== 'undefined') {
       localStorage.setItem('deskdangle_settings', JSON.stringify(this.currentSettings));
     }
 
@@ -119,7 +124,7 @@ class ClientSettingsManager {
   }
 
   public async resetSettings(): Promise<DangleSettings> {
-    if (window.electronAPI?.resetSettings) {
+    if (typeof window !== 'undefined' && window.electronAPI?.resetSettings) {
       const res = await window.electronAPI.resetSettings();
       this.currentSettings = { ...DEFAULT_APP_SETTINGS, ...res };
     } else {
@@ -130,7 +135,9 @@ class ClientSettingsManager {
         customCharms: savedCharms,
         customEmojis: savedEmojis,
       };
-      localStorage.setItem('deskdangle_settings', JSON.stringify(this.currentSettings));
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('deskdangle_settings', JSON.stringify(this.currentSettings));
+      }
     }
     this.notify();
     return this.currentSettings;

@@ -1,3 +1,6 @@
+import type { Charm, DangleSettings } from '../charms/charmTypes';
+import type { DisplayInfo } from '../../electron/displayManager';
+
 export interface InteractiveRect {
   x: number;
   y: number;
@@ -14,6 +17,8 @@ export interface ElectronAPI {
     dataUrl: string,
     charmId: string
   ) => Promise<{ valid: boolean; error?: string; sanitizedDataUrl?: string }>;
+  exportCharmPack?: (charms: Charm[]) => Promise<{ success: boolean; filePath?: string; error?: string }>;
+  importCharmPack?: () => Promise<{ success: boolean; pack?: { name?: string; charms: Charm[] }; error?: string }>;
   onSettingsUpdated: (callback: (settings: DangleSettings) => void) => () => void;
   openSettings: () => void;
   getDisplays: () => Promise<DisplayInfo[]>;

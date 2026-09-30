@@ -54,8 +54,8 @@ export const AboutTab: React.FC = () => {
           <DangleLogoIcon size={56} />
         </div>
         <h2 className="apple-about-name">DeskDangle</h2>
-        <p className="apple-about-tagline">Tiny charms. A little life on your Windows desktop.</p>
-        <span className="apple-about-version">Version 1.0.1 (Windows 10 / 11)</span>
+        <p className="apple-about-tagline">Tiny charms. A little life on your desktop.</p>
+        <span className="apple-about-version">Version 1.0.1</span>
       </div>
 
       {/* Product Details */}
@@ -66,8 +66,8 @@ export const AboutTab: React.FC = () => {
         <SettingsRow label="GitHub Profile" subtitle="Source code and releases">
           <span style={{ fontSize: '13px', color: 'var(--accent-text)' }}>github.com/heyriyaz</span>
         </SettingsRow>
-        <SettingsRow label="Platform" subtitle="Engineered exclusively for Microsoft Windows">
-          <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Windows 10 / Windows 11 (x64)</span>
+        <SettingsRow label="Platform" subtitle="Cross-platform desktop companion">
+          <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>macOS & Windows (x64 / arm64)</span>
         </SettingsRow>
         <SettingsRow label="App ID" subtitle="System package identifier">
           <code style={{ fontSize: '12px', opacity: 0.8 }}>com.deskdangle.desktop</code>

@@ -1,4 +1,5 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, dialog, globalShortcut, ipcMain, nativeTheme, powerMonitor, screen } from 'electron';
+import fs from 'fs';
 import { WindowManager } from './windowManager';
 import { SettingsStore } from './store';
 import { TrayManager } from './trayManager';
@@ -8,7 +9,9 @@ import { setAutoLaunch, cleanupDevStartupRegistry } from './autoLaunch';
 
 // Set app name and Windows AppUserModelId for taskbar grouping, shortcuts, and startup
 app.name = 'DeskDangle';
-app.setAppUserModelId('com.deskdangle.desktop');
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.deskdangle.desktop');
+}
 
 // Prevent multiple instances
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -164,6 +167,68 @@ function setupIPC(wm: WindowManager) {
     return displayManager.getAllDisplays();
   });
 
+  // Export Custom Charms as .dangle JSON pack
+  ipcMain.handle('export-charm-pack', async (_event, customCharms: any[]) => {
+    try {
+      const { filePath, canceled } = await dialog.showSaveDialog({
+        title: 'Export DeskDangle Charm Pack',
+        defaultPath: 'custom-charms.dangle',
+        filters: [
+          { name: 'DeskDangle Charm Pack (*.dangle)', extensions: ['dangle', 'json'] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+      });
+
+      if (canceled || !filePath) {
+        return { success: false, error: 'Export canceled' };
+      }
+
+      const pack = {
+        version: '1.0.0',
+        name: 'DeskDangle Custom Charm Pack',
+        author: 'DeskDangle User',
+        createdAt: new Date().toISOString(),
+        charms: customCharms,
+      };
+
+      await fs.promises.writeFile(filePath, JSON.stringify(pack, null, 2), 'utf-8');
+      return { success: true, filePath };
+    } catch (err: any) {
+      console.error('[DeskDangle] Export pack error:', err);
+      return { success: false, error: err.message || 'Failed to export charm pack' };
+    }
+  });
+
+  // Import Custom Charms from .dangle JSON pack
+  ipcMain.handle('import-charm-pack', async () => {
+    try {
+      const { filePaths, canceled } = await dialog.showOpenDialog({
+        title: 'Import DeskDangle Charm Pack',
+        properties: ['openFile'],
+        filters: [
+          { name: 'DeskDangle Charm Pack (*.dangle)', extensions: ['dangle', 'json'] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+      });
+
+      if (canceled || !filePaths || filePaths.length === 0) {
+        return { success: false, error: 'Import canceled' };
+      }
+
+      const raw = await fs.promises.readFile(filePaths[0], 'utf-8');
+      const pack = JSON.parse(raw);
+
+      if (!pack || !Array.isArray(pack.charms)) {
+        return { success: false, error: 'Invalid charm pack format' };
+      }
+
+      return { success: true, pack };
+    } catch (err: any) {
+      console.error('[DeskDangle] Import pack error:', err);
+      return { success: false, error: err.message || 'Failed to import charm pack' };
+    }
+  });
+
   ipcMain.on('open-settings', () => {
     wm.openSettingsWindow();
   });
@@ -253,6 +318,40 @@ app.whenReady().then(() => {
   });
 
   registerConfiguredShortcuts(windowManager);
+
+  // Power & Sleep Monitoring (Suspends physics when screen is locked or laptop lid closes)
+  powerMonitor.on('lock-screen', () => {
+    const win = windowManager?.getOverlayWindow();
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('toggle-visibility', false);
+    }
+  });
+  powerMonitor.on('unlock-screen', () => {
+    const win = windowManager?.getOverlayWindow();
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('toggle-visibility', true);
+    }
+  });
+  powerMonitor.on('suspend', () => {
+    const win = windowManager?.getOverlayWindow();
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('toggle-visibility', false);
+    }
+  });
+  powerMonitor.on('resume', () => {
+    const win = windowManager?.getOverlayWindow();
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('toggle-visibility', true);
+    }
+  });
+
+  // Dynamic Dark/Light mode tracking
+  nativeTheme.on('updated', () => {
+    const current = store.getSettings();
+    if (current.general?.theme === 'system') {
+      broadcastSettings(current);
+    }
+  });
 
   // Monitor Display changes (plugging / unplugging monitors)
   screen.on('display-metrics-changed', () => {

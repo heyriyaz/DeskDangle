@@ -4,6 +4,7 @@ import { CharmRegistry } from '../charms/charmRegistry';
 import { DebugOverlay, DebugMetrics } from './DebugOverlay';
 import { QuickContextMenu } from './QuickContextMenu';
 import { QuickCharmDrawer } from './QuickCharmDrawer';
+import { ParticleSystem } from './ParticleSystem';
 import { useDangleSettings } from '../store/settingsStore';
 
 import { soundEffects } from '../audio/SoundEffects';
@@ -12,6 +13,7 @@ export const DangleCanvas: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const physicsRef = useRef<PhysicsWorld | null>(null);
+  const particleSystemRef = useRef<ParticleSystem>(new ParticleSystem());
   const animFrameRef = useRef<number>(0);
 
   // Settings
@@ -43,9 +45,14 @@ export const DangleCanvas: React.FC = () => {
   const lastFpsTimeRef = useRef(performance.now());
   const lastMetricsUpdateRef = useRef(0);
   const lastBoundsUpdateRef = useRef(0);
+  const lastReportedBoundsRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
+  const prevRenderBoxRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
+  const forceFullClearRef = useRef(true);
   const currentFpsRef = useRef(60);
   const lastPointerDownTimeRef = useRef(0);
   const pointerDownPosRef = useRef({ x: 0, y: 0 });
+  const lastPointerMoveTimeRef = useRef(performance.now());
+  const lastPointerPosRef = useRef({ x: 0, y: 0 });
 
   // Current active charm
   const currentCharm = CharmRegistry.getCharmById(settings.selectedCharmId);
@@ -136,27 +143,72 @@ export const DangleCanvas: React.FC = () => {
         lastFpsTimeRef.current = now;
       }
 
-      // Step Physics with 120Hz substepping accumulator
+      // Step Physics with 120Hz/60Hz substepping accumulator
       physics.step(now);
 
-      // Clear full screen
-      ctx.clearRect(0, 0, width, height);
+      // Update particle effects
+      particleSystemRef.current.update();
 
-      // 1. Draw Rope Cord
       const nodes = physics.rope.getNodePoints(physics.charm);
-      physics.rope.draw(ctx, nodes);
-
-      // 2. Draw Subtle Top Anchor Slide Handle when hovered near top edge
-      if (isNearAnchorRef.current || isHoveredRef.current) {
-        drawTopAnchorHandle(ctx, physics.rope.anchorX);
-      }
-
-      // 3. Draw Charm
       const charmPos = physics.charm.getPosition();
       const charmAngle = physics.charm.getAngle();
       const dragging = physics.getIsDragging();
       const hovered = isHoveredRef.current;
+      const charmRadius = physics.charm.radius + 24;
+      const anchorX = physics.rope.anchorX;
 
+      // 1. Calculate current frame render bounding box
+      let minX = Math.min(anchorX, charmPos.x - charmRadius);
+      let maxX = Math.max(anchorX, charmPos.x + charmRadius);
+      let minY = 0;
+      let maxY = charmPos.y + charmRadius;
+
+      for (const node of nodes) {
+        if (node.x < minX) minX = node.x;
+        if (node.x > maxX) maxX = node.x;
+        if (node.y < minY) minY = node.y;
+        if (node.y > maxY) maxY = node.y;
+      }
+
+      const pBounds = particleSystemRef.current.getBounds();
+      if (pBounds) {
+        if (pBounds.minX < minX) minX = pBounds.minX;
+        if (pBounds.maxX > maxX) maxX = pBounds.maxX;
+        if (pBounds.minY < minY) minY = pBounds.minY;
+        if (pBounds.maxY > maxY) maxY = pBounds.maxY;
+      }
+
+      const pad = 36;
+      const curBox = {
+        x: Math.max(0, Math.floor(minX - pad)),
+        y: Math.max(0, Math.floor(minY)),
+        width: Math.min(width, Math.ceil(maxX - minX + pad * 2)),
+        height: Math.min(height, Math.ceil(maxY - minY + pad * 2)),
+      };
+
+      // 2. Clear only dirty union rectangle for huge GPU fill-rate performance gains
+      const prevBox = prevRenderBoxRef.current;
+      if (prevBox && !forceFullClearRef.current) {
+        const dirtyX = Math.max(0, Math.min(prevBox.x, curBox.x));
+        const dirtyY = Math.max(0, Math.min(prevBox.y, curBox.y));
+        const dirtyRight = Math.min(width, Math.max(prevBox.x + prevBox.width, curBox.x + curBox.width));
+        const dirtyBottom = Math.min(height, Math.max(prevBox.y + prevBox.height, curBox.y + curBox.height));
+        ctx.clearRect(dirtyX, dirtyY, dirtyRight - dirtyX, dirtyBottom - dirtyY);
+      } else {
+        ctx.clearRect(0, 0, width, height);
+        forceFullClearRef.current = false;
+      }
+      prevRenderBoxRef.current = curBox;
+
+      // 3. Draw Rope Cord
+      physics.rope.draw(ctx, nodes);
+
+      // 4. Draw Subtle Top Anchor Slide Handle when hovered near top edge
+      if (isNearAnchorRef.current || isHoveredRef.current) {
+        drawTopAnchorHandle(ctx, physics.rope.anchorX);
+      }
+
+      // 5. Draw Charm
       CharmRegistry.renderCharm(
         ctx,
         physics.charm.charm,
@@ -168,28 +220,19 @@ export const DangleCanvas: React.FC = () => {
         settings.charmScale
       );
 
-      // 4. Draw Debug Wireframes
+      // 6. Draw Particles (if active and enabled)
+      if (settings.general.particlesEnabled !== false) {
+        particleSystemRef.current.draw(ctx);
+      }
+
+      // 7. Draw Debug Wireframes
       if (showWireframes) {
         drawDebugWireframes(ctx, physics, nodes);
       }
 
-      // 5. Throttled Bounds Reporting to Electron Main Process for seamless hit testing
-      if (now - lastBoundsUpdateRef.current > 30) {
+      // 8. Throttled & Deduplicated Bounds Reporting to Electron Main Process
+      if (now - lastBoundsUpdateRef.current > 35) {
         lastBoundsUpdateRef.current = now;
-        const charmRadius = physics.charm.radius + 16;
-        const anchorX = physics.rope.anchorX;
-
-        let minX = anchorX;
-        let maxX = anchorX;
-        let minY = 0;
-        let maxY = charmPos.y + charmRadius;
-        for (const node of nodes) {
-          if (node.x < minX) minX = node.x;
-          if (node.x > maxX) maxX = node.x;
-          if (node.y < minY) minY = node.y;
-          if (node.y > maxY) maxY = node.y;
-        }
-
         const interactiveBox = {
           x: Math.max(0, minX - charmRadius - 20),
           y: Math.max(0, minY),
@@ -204,10 +247,21 @@ export const DangleCanvas: React.FC = () => {
           height: 38,
         };
 
-        window.electronAPI?.updateInteractiveBounds([interactiveBox, anchorBox]);
+        const prev = lastReportedBoundsRef.current;
+        const changed =
+          !prev ||
+          Math.abs(prev.x - interactiveBox.x) > 1.5 ||
+          Math.abs(prev.y - interactiveBox.y) > 1.5 ||
+          Math.abs(prev.width - interactiveBox.width) > 2 ||
+          Math.abs(prev.height - interactiveBox.height) > 2;
+
+        if (changed) {
+          lastReportedBoundsRef.current = interactiveBox;
+          window.electronAPI?.updateInteractiveBounds([interactiveBox, anchorBox]);
+        }
       }
 
-      // 6. Throttled Metrics (only when Debug HUD is active)
+      // 9. Throttled Metrics (only when Debug HUD is active)
       if (showDebug && now - lastMetricsUpdateRef.current > 100) {
         lastMetricsUpdateRef.current = now;
         setMetrics({
@@ -325,7 +379,7 @@ export const DangleCanvas: React.FC = () => {
       pointerDownPosRef.current = { x, y };
 
       if (physics.isPointNearInteractiveZone(x, y)) {
-        if (physics.isPointOnCharm(x, y) && timeSinceLast < 300 && distSinceLast < 14) {
+        if (physics.isPointOnCharm(x, y) && timeSinceLast < 320 && distSinceLast < 18) {
           // Double Click Action
           if (settings.general.doubleClickAction === 'settings') {
             window.electronAPI?.openSettings();
@@ -333,8 +387,16 @@ export const DangleCanvas: React.FC = () => {
             const random = CharmRegistry.getRandomCharm(settings.selectedCharmId);
             soundEffects.playCharmSwitchSound();
             updateSettings({ selectedCharmId: random.id });
-          } else {
+          } else if (settings.general.doubleClickAction === 'quick-drawer') {
             setShowQuickDrawer(true);
+          } else {
+            // Default: 'delight-burst'
+            const charmPos = physics.charm.getPosition();
+            if (settings.general.particlesEnabled !== false) {
+              particleSystemRef.current.burst(charmPos.x, charmPos.y, 18, 'mixed');
+            }
+            physics.triggerDelightImpulse();
+            soundEffects.playDelightChime();
           }
           return;
         }
@@ -358,9 +420,21 @@ export const DangleCanvas: React.FC = () => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    const now = performance.now();
+    const dt = Math.max(1, now - lastPointerMoveTimeRef.current);
+    const vx = (x - lastPointerPosRef.current.x) / dt;
+    const vy = (y - lastPointerPosRef.current.y) / dt;
+    lastPointerMoveTimeRef.current = now;
+    lastPointerPosRef.current = { x, y };
+
     if (physics.getIsDragging()) {
       physics.updateDrag(x, y);
     } else {
+      // Natural aerodynamic air displacement breeze
+      if (settings.physics.airDisplacement !== false) {
+        physics.applyAirDisplacement(x, y, vx, vy);
+      }
+
       const nearAnchor = physics.isPointNearAnchor(x, y);
       const nearInteractive =
         physics.isPointNearInteractiveZone(x, y) ||

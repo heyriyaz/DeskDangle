@@ -43,16 +43,16 @@ export const GeneralTab: React.FC = () => {
       {/* TOP SCREEN POSITION GROUP */}
       <SettingsGroup
         title="Top Screen Position"
-        footer="You can also click and drag the top of the rope horizontally across the top edge of your monitor anytime."
+        footer="You can click and drag the top anchor horizontally across the top of your screen anytime."
       >
         <SettingsRow
           label="Preset Alignment"
-          subtitle="Quickly snap to left, center, or right edge"
+          subtitle="Snap anchor directly to MacBook Notch or screen edges"
         >
           <SettingsSegmented
             options={[
               { id: 'left', label: 'Left (15%)' },
-              { id: 'center', label: 'Center (50%)' },
+              { id: 'center', label: '💻 Notch (50%)' },
               { id: 'right', label: 'Right (85%)' },
             ]}
             value={currentPreset}
@@ -82,11 +82,34 @@ export const GeneralTab: React.FC = () => {
         </SettingsRow>
       </SettingsGroup>
 
+      {/* THEME & APPEARANCE GROUP */}
+      <SettingsGroup title="Interface Theme">
+        <SettingsRow label="Appearance" subtitle="Match macOS system dark/light appearance or lock a specific theme">
+          <SettingsSegmented
+            options={[
+              { id: 'system', label: 'Auto (System)' },
+              { id: 'dark', label: 'Dark' },
+              { id: 'light', label: 'Light' },
+            ]}
+            value={settings.general.theme || 'system'}
+            onChange={(theme) =>
+              updateSettings({
+                general: {
+                  ...settings.general,
+                  theme: theme as 'system' | 'dark' | 'light',
+                },
+              })
+            }
+            size="sm"
+          />
+        </SettingsRow>
+      </SettingsGroup>
+
       {/* STARTUP & LAUNCH GROUP */}
       <SettingsGroup title="Launch">
         <SettingsRow
-          label="Start with Windows"
-          subtitle="Automatically start DeskDangle when logging in to Windows"
+          label="Start at Login"
+          subtitle="Automatically start DeskDangle when logging in to your computer"
         >
           <SettingsToggle
             checked={settings.general.launchAtStartup}
@@ -105,7 +128,6 @@ export const GeneralTab: React.FC = () => {
           label="Target Display"
           subtitle="Choose which monitor DeskDangle hangs from"
         >
-
           <SettingsSegmented
             options={[
               { id: 'primary', label: 'Primary Display' },
