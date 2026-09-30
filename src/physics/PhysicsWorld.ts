@@ -108,7 +108,7 @@ export class PhysicsWorld {
       },
       positionIterations: 10,
       velocityIterations: 10,
-      constraintIterations: 4,
+      constraintIterations: 8,
     });
     this.world = this.engine.world;
 
@@ -252,6 +252,18 @@ export class PhysicsWorld {
           y: windY * 0.2,
         });
       }
+    }
+
+    // 3. Upright self-balancing stabilization (keeps charm hanging upright like a real physical pendant)
+    if (!this.isDragging) {
+      const currentAngle = this.charm.getAngle();
+      const normalizedAngle = Math.atan2(Math.sin(currentAngle), Math.cos(currentAngle));
+      const uprightTorque = -normalizedAngle * 0.12;
+      const angularDamping = -this.charm.getAngularVelocity() * 0.25;
+      Matter.Body.setAngularVelocity(
+        this.charm.body,
+        this.charm.getAngularVelocity() * 0.94 + (uprightTorque + angularDamping) * 0.04
+      );
     }
 
     Matter.Engine.update(this.engine, deltaMs);
@@ -531,8 +543,30 @@ export class PhysicsWorld {
   }
 
   public updateCharm(charm: Charm, scale = 1.0): void {
+    const isSameCharm = this.charm.charm.id === charm.id;
+    const isSameScale = Math.abs(this.charm.globalScale - scale) < 0.001;
+    if (isSameCharm && isSameScale) {
+      return;
+    }
+
+    const prevTopOffset = this.charm.getTopOffset();
     this.charm.updateCharm(charm, scale);
-    this.rope.updateSettings(this.world, this.charm, {});
+    const newTopOffset = this.charm.getTopOffset();
+
+    if (this.rope.charmConstraint && this.rope.segments.length > 0) {
+      const deltaOffset = newTopOffset - prevTopOffset;
+      const curPos = this.charm.getPosition();
+      Matter.Body.setPosition(this.charm.body, {
+        x: curPos.x,
+        y: curPos.y + deltaOffset,
+      });
+      this.rope.charmConstraint.pointB = { x: 0, y: -newTopOffset };
+    } else {
+      Matter.Body.setAngle(this.charm.body, 0);
+      Matter.Body.setAngularVelocity(this.charm.body, 0);
+      Matter.Body.setVelocity(this.charm.body, { x: 0, y: 0 });
+      this.rope.rebuildSegments(this.world, this.charm);
+    }
   }
 
   public changeCharm(charm: Charm, scale = 1.0): void {

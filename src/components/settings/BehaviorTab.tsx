@@ -106,7 +106,7 @@ export const BehaviorTab: React.FC = () => {
 
         <SettingsRow
           label="Eco Battery Saver"
-          subtitle="60Hz physics & quiescent resting mode for maximum MacBook battery longevity"
+          subtitle="60Hz physics & quiescent resting mode for maximum laptop battery longevity"
         >
           <SettingsToggle
             checked={Boolean(settings.general.ecoMode)}
