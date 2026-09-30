@@ -13,11 +13,11 @@
     "build": "tsc && vite build",
     "test": "vitest run",
     "preview": "vite preview",
-    "package": "npm run build && electron-builder",
-    "package:win": "npm run build && electron-builder --win",
-    "package:mac": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac && codesign --force --deep -s - release/mac-arm64/DeskDangle.app && xattr -cr release/mac-arm64/DeskDangle.app",
-    "package:dmg": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg",
-    "package:zip": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac zip"
+    "package": "npm run build && electron-builder --publish never",
+    "package:win": "npm run build && electron-builder --win --publish never",
+    "package:mac": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --publish never",
+    "package:dmg": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg --publish never",
+    "package:zip": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac zip --publish never"
   },
   "build": {
     "appId": "com.deskdangle.desktop",
