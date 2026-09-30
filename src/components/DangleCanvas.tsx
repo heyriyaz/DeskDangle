@@ -213,33 +213,29 @@ export const DangleCanvas: React.FC = () => {
       }
 
       // 8. Throttled & Deduplicated Bounds Reporting to Electron Main Process
-      if (now - lastBoundsUpdateRef.current > 35) {
+      // Reports ONLY the tight hitbox of the charm body.
+      // The rope, anchor, and the entire area above and around the charm remain 100% click-through!
+      if (now - lastBoundsUpdateRef.current > 30) {
         lastBoundsUpdateRef.current = now;
-        const interactiveBox = {
-          x: Math.max(0, minX - charmRadius - 20),
-          y: Math.max(0, minY),
-          width: Math.max(80, maxX - minX + (charmRadius + 20) * 2),
-          height: Math.max(80, maxY - minY + charmRadius + 20),
-        };
-
-        const anchorBox = {
-          x: Math.max(0, anchorX - 50),
-          y: 0,
-          width: 100,
-          height: 38,
+        const tightRadius = Math.round(physics.charm.radius + 4);
+        const charmBox = {
+          x: Math.max(0, Math.round(charmPos.x - tightRadius)),
+          y: Math.max(0, Math.round(charmPos.y - tightRadius)),
+          width: tightRadius * 2,
+          height: tightRadius * 2,
         };
 
         const prev = lastReportedBoundsRef.current;
         const changed =
           !prev ||
-          Math.abs(prev.x - interactiveBox.x) > 1.5 ||
-          Math.abs(prev.y - interactiveBox.y) > 1.5 ||
-          Math.abs(prev.width - interactiveBox.width) > 2 ||
-          Math.abs(prev.height - interactiveBox.height) > 2;
+          Math.abs(prev.x - charmBox.x) > 1.5 ||
+          Math.abs(prev.y - charmBox.y) > 1.5 ||
+          Math.abs(prev.width - charmBox.width) > 2 ||
+          Math.abs(prev.height - charmBox.height) > 2;
 
         if (changed) {
-          lastReportedBoundsRef.current = interactiveBox;
-          window.electronAPI?.updateInteractiveBounds([interactiveBox, anchorBox]);
+          lastReportedBoundsRef.current = charmBox;
+          window.electronAPI?.updateInteractiveBounds([charmBox]);
         }
       }
 
@@ -340,9 +336,9 @@ export const DangleCanvas: React.FC = () => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Handle Right Click -> Context Menu
+    // Handle Right Click -> Context Menu (only when clicking directly on charm)
     if (e.button === 2) {
-      if (physics.isPointOnCharm(x, y) || physics.isPointNearInteractiveZone(x, y)) {
+      if (physics.isPointOnCharm(x, y)) {
         setContextMenuPos({ x: e.clientX, y: e.clientY });
         setMousePassThrough(false);
       }
