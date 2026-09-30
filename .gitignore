@@ -52,3 +52,10 @@ Thumbs.db
 *.tmp
 *.temp
 scratch/
+
+# Local Assets & Non-Repo Folders
+marvel-raw-images/
+hero-packs/
+website/
+certs/
+store-assets/
