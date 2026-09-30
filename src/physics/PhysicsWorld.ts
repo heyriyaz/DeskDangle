@@ -336,7 +336,7 @@ export class PhysicsWorld {
   public isPointNearAnchor(x: number, y: number): boolean {
     const dx = Math.abs(x - this.rope.anchorX);
     const dy = y;
-    return dx < 12 && dy >= 0 && dy < 10;
+    return dx <= 20 && dy >= 0 && dy <= 16;
   }
 
   public isPointOnRope(x: number, y: number): boolean {
@@ -351,7 +351,11 @@ export class PhysicsWorld {
   }
 
   public isPointNearInteractiveZone(x: number, y: number): boolean {
-    return this.isPointOnCharm(x, y);
+    return this.isPointOnCharm(x, y) || this.isPointNearAnchor(x, y);
+  }
+
+  public getIsDraggingAnchor(): boolean {
+    return this.isDraggingAnchor;
   }
 
   public findTargetBodyAt(x: number, y: number): Matter.Body | null {

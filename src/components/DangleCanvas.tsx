@@ -48,6 +48,7 @@ export const DangleCanvas: React.FC = () => {
   const lastMetricsUpdateRef = useRef(0);
   const lastBoundsUpdateRef = useRef(0);
   const lastReportedBoundsRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
+  const lastReportedAnchorRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
 
   const currentFpsRef = useRef(60);
   const lastPointerDownTimeRef = useRef(0);
@@ -185,10 +186,9 @@ export const DangleCanvas: React.FC = () => {
       // 3. Draw Rope Cord
       physics.rope.draw(ctx, nodes, charmAngle);
 
-      // 4. Draw Subtle Top Anchor Slide Handle when hovered near top edge
-      if (isNearAnchorRef.current || isHoveredRef.current) {
-        drawTopAnchorHandle(ctx, physics.rope.anchorX);
-      }
+      // 4. Draw Top Anchor Slide Handle (subtle pin normally, prominent pill handle on hover or drag)
+      const isDraggingAnchor = physics.getIsDraggingAnchor();
+      drawTopAnchorHandle(ctx, physics.rope.anchorX, isNearAnchorRef.current || isDraggingAnchor);
 
       // 5. Draw Charm
       CharmRegistry.renderCharm(
@@ -213,8 +213,8 @@ export const DangleCanvas: React.FC = () => {
       }
 
       // 8. Throttled & Deduplicated Bounds Reporting to Electron Main Process
-      // Reports ONLY the tight hitbox of the charm body.
-      // The rope, anchor, and the entire area above and around the charm remain 100% click-through!
+      // Reports ONLY the tight hitbox of the charm body and the compact top anchor handle.
+      // The rest of the rope and screen area remain 100% click-through!
       if (now - lastBoundsUpdateRef.current > 30) {
         lastBoundsUpdateRef.current = now;
         const tightRadius = Math.round(physics.charm.radius + 4);
@@ -225,17 +225,28 @@ export const DangleCanvas: React.FC = () => {
           height: tightRadius * 2,
         };
 
-        const prev = lastReportedBoundsRef.current;
+        const anchorBox = {
+          x: Math.max(0, Math.round(physics.rope.anchorX - 20)),
+          y: 0,
+          width: 40,
+          height: 16,
+        };
+
+        const prevCharm = lastReportedBoundsRef.current;
+        const prevAnchor = lastReportedAnchorRef.current;
         const changed =
-          !prev ||
-          Math.abs(prev.x - charmBox.x) > 1.5 ||
-          Math.abs(prev.y - charmBox.y) > 1.5 ||
-          Math.abs(prev.width - charmBox.width) > 2 ||
-          Math.abs(prev.height - charmBox.height) > 2;
+          !prevCharm ||
+          !prevAnchor ||
+          Math.abs(prevCharm.x - charmBox.x) > 1.5 ||
+          Math.abs(prevCharm.y - charmBox.y) > 1.5 ||
+          Math.abs(prevCharm.width - charmBox.width) > 2 ||
+          Math.abs(prevCharm.height - charmBox.height) > 2 ||
+          Math.abs(prevAnchor.x - anchorBox.x) > 1.5;
 
         if (changed) {
           lastReportedBoundsRef.current = charmBox;
-          window.electronAPI?.updateInteractiveBounds([charmBox]);
+          lastReportedAnchorRef.current = anchorBox;
+          window.electronAPI?.updateInteractiveBounds([charmBox, anchorBox]);
         }
       }
 
@@ -565,18 +576,28 @@ export const DangleCanvas: React.FC = () => {
 
 // ==================== RENDERING HELPERS ====================
 
-function drawTopAnchorHandle(ctx: CanvasRenderingContext2D, anchorX: number) {
+function drawTopAnchorHandle(ctx: CanvasRenderingContext2D, anchorX: number, active = false) {
   ctx.save();
-  // Sleek subtle horizontal slider indicator dot at top edge
-  ctx.beginPath();
-  ctx.arc(anchorX, 1.5, 3.5, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.fill();
+  if (active) {
+    // Sleek glowing pill slider indicator at top edge when hovered or dragging
+    ctx.beginPath();
+    ctx.roundRect(anchorX - 16, 0, 32, 5, [0, 0, 4, 4]);
+    ctx.fillStyle = 'rgba(234, 179, 8, 0.95)';
+    ctx.shadowColor = 'rgba(234, 179, 8, 0.7)';
+    ctx.shadowBlur = 8;
+    ctx.fill();
 
-  ctx.beginPath();
-  ctx.roundRect(anchorX - 10, 0, 20, 2.5, 1);
-  ctx.fillStyle = 'rgba(234, 179, 8, 0.6)';
-  ctx.fill();
+    ctx.beginPath();
+    ctx.arc(anchorX, 3, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+  } else {
+    // Subtle anchor mount dot at screen top bezel
+    ctx.beginPath();
+    ctx.arc(anchorX, 1.5, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fill();
+  }
   ctx.restore();
 }
 

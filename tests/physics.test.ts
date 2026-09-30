@@ -192,4 +192,48 @@ describe('DeskDangle Matter.js Physics Engine', () => {
 
     physics.destroy();
   });
+
+  it('should detect clicks near anchor and support dragging anchor horizontally along screen top', () => {
+    const charm = BUILTIN_CHARMS[0];
+    const physics = new PhysicsWorld(
+      1920,
+      1080,
+      charm,
+      1.0,
+      DEFAULT_APP_SETTINGS.rope,
+      DEFAULT_APP_SETTINGS.physics
+    );
+
+    const anchorX = physics.rope.anchorX;
+
+    // Hit detection near anchor
+    expect(physics.isPointNearAnchor(anchorX, 5)).toBe(true);
+    expect(physics.isPointNearAnchor(anchorX + 15, 8)).toBe(true);
+    expect(physics.isPointNearAnchor(anchorX + 50, 5)).toBe(false);
+    expect(physics.isPointNearAnchor(anchorX, 35)).toBe(false);
+
+    // Interactive zone includes anchor
+    expect(physics.isPointNearInteractiveZone(anchorX, 5)).toBe(true);
+
+    // Empty space along middle of rope is NOT interactive (ensures click-through)
+    const midY = (physics.charm.getPosition().y) / 2;
+    expect(physics.isPointNearInteractiveZone(anchorX, midY)).toBe(false);
+
+    // Drag anchor horizontally
+    physics.startDrag(anchorX, 4);
+    expect(physics.getIsDragging()).toBe(true);
+    expect(physics.getIsDraggingAnchor()).toBe(true);
+
+    // Slide to a new X position
+    physics.updateDrag(700, 4);
+    expect(physics.rope.anchorX).toBe(700);
+
+    // End drag returns newAnchorXPercent
+    const dragResult = physics.endDrag();
+    expect(physics.getIsDragging()).toBe(false);
+    expect(physics.getIsDraggingAnchor()).toBe(false);
+    expect(dragResult.newAnchorXPercent).toBeCloseTo(700 / 1920, 2);
+
+    physics.destroy();
+  });
 });
