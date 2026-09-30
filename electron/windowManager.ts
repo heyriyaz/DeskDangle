@@ -12,13 +12,17 @@ export interface InteractiveRect {
 }
 
 function getAppIconPath(): string | undefined {
+  const isWin = process.platform === 'win32';
+  const primaryIcon = isWin ? 'icon.ico' : 'icon.png';
+  const secondaryIcon = isWin ? 'icon.png' : 'icon.ico';
+
   const candidates = [
-    path.join(__dirname, '../build/icon.png'),
-    path.join(app.getAppPath(), 'build/icon.png'),
-    path.join(process.resourcesPath, 'build/icon.png'),
-    path.join(__dirname, '../build/icon.ico'),
-    path.join(app.getAppPath(), 'build/icon.ico'),
-    path.join(process.resourcesPath, 'build/icon.ico'),
+    path.join(__dirname, `../build/${primaryIcon}`),
+    path.join(app.getAppPath(), `build/${primaryIcon}`),
+    path.join(process.resourcesPath, `build/${primaryIcon}`),
+    path.join(__dirname, `../build/${secondaryIcon}`),
+    path.join(app.getAppPath(), `build/${secondaryIcon}`),
+    path.join(process.resourcesPath, `build/${secondaryIcon}`),
     path.join(__dirname, '../public/tray-icon.png'),
     path.join(__dirname, '../dist/tray-icon.png'),
     path.join(app.getAppPath(), 'dist/tray-icon.png'),
