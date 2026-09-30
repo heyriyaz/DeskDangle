@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install Dependencies
@@ -29,6 +29,8 @@ jobs:
         run: npm test
 
       - name: Build Windows Package
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
         run: npm run package:win
 
       - name: Upload Windows Artifacts
@@ -48,7 +50,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install Dependencies
@@ -62,15 +64,7 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: false
         run: |
           npm run build
-          npx electron-builder --mac dmg zip
-          if [ -d "release/mac-arm64/DeskDangle.app" ]; then
-            codesign --force --deep -s - release/mac-arm64/DeskDangle.app
-            xattr -cr release/mac-arm64/DeskDangle.app
-          fi
-          if [ -d "release/mac/DeskDangle.app" ]; then
-            codesign --force --deep -s - release/mac/DeskDangle.app
-            xattr -cr release/mac/DeskDangle.app
-          fi
+          npx electron-builder --mac
 
       - name: Upload macOS Artifacts
         uses: actions/upload-artifact@v4
@@ -79,3 +73,33 @@ jobs:
           path: |
             release/*.dmg
             release/*.zip
+
+  release:
+    needs: [build-windows, build-mac]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-binaries
+          path: release-artifacts
+
+      - name: Download macOS Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-binaries
+          path: release-artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-artifacts/*.exe
+            release-artifacts/*.dmg
+            release-artifacts/*.zip
+          tag_name: ${{ github.ref_name }}
+          name: DeskDangle ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true

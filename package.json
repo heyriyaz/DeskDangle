@@ -36,6 +36,7 @@
       "dist-electron/**/*",
       "build/icon.ico",
       "build/icon.png",
+      "build/icon.icns",
       "package.json",
       "!**/*.map",
       "!**/*.ts",
@@ -44,12 +45,11 @@
     ],
     "mac": {
       "target": [
-        "dir",
         "dmg",
         "zip"
       ],
       "identity": null,
-      "icon": "build/icon.png",
+      "icon": "build/icon.icns",
       "category": "public.app-category.entertainment",
       "hardenedRuntime": false,
       "gatekeeperAssess": false,
@@ -80,7 +80,8 @@
           ]
         }
       ],
-      "icon": "build/icon.ico"
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": true,
