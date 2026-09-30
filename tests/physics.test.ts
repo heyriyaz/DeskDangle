@@ -165,4 +165,31 @@ describe('DeskDangle Matter.js Physics Engine', () => {
 
     physics.destroy();
   });
+
+  it('should maintain continuous rope attachment across all charm scale levels (0.7 to 1.4)', () => {
+    const deadpool = BUILTIN_CHARMS.find((c) => c.id === 'deadpool') || BUILTIN_CHARMS[0];
+    const physics = new PhysicsWorld(
+      1920,
+      1080,
+      deadpool,
+      1.0,
+      DEFAULT_APP_SETTINGS.rope,
+      DEFAULT_APP_SETTINGS.physics
+    );
+
+    // Test multiple scales from min 0.70 to max 1.40
+    for (const scale of [0.7, 0.85, 1.0, 1.25, 1.4]) {
+      physics.updateCharm(deadpool, scale);
+      const nodes = physics.rope.getNodePoints(physics.charm);
+      const endNode = nodes[nodes.length - 1];
+      const charmPos = physics.charm.getPosition();
+      const topOffset = physics.charm.getTopOffset();
+
+      // End of rope node Y must equal charm center Y minus topOffset
+      expect(endNode.y).toBeCloseTo(charmPos.y - topOffset, 2);
+      expect(endNode.x).toBeCloseTo(charmPos.x, 2);
+    }
+
+    physics.destroy();
+  });
 });

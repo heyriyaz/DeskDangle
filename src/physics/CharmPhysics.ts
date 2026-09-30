@@ -1,33 +1,48 @@
 import Matter from 'matter-js';
 import { Charm } from '../charms/charmTypes';
+import { CharmRegistry } from '../charms/charmRegistry';
 
 export class CharmPhysics {
   public body: Matter.Body;
   public charm: Charm;
   public radius: number;
+  public globalScale: number;
 
   constructor(x: number, y: number, charm: Charm, globalScale = 1.0) {
     this.charm = charm;
+    this.globalScale = globalScale;
     this.radius = 34 * (charm.scale || 1.0) * globalScale;
 
     this.body = Matter.Bodies.circle(x, y, this.radius, {
       label: 'charm',
       mass: 2.8,
-      frictionAir: 0.007,
-      restitution: 0.35,
+      frictionAir: 0.010,
+      restitution: 0.32,
       friction: 0.1,
       frictionStatic: 0.1,
     });
+    // Enhance rotational inertia to stabilize hanging charm against jitter
+    Matter.Body.setInertia(this.body, this.body.inertia * 2.8);
   }
 
   public updateCharm(charm: Charm, globalScale = 1.0): void {
     this.charm = charm;
+    this.globalScale = globalScale;
     const newRadius = 34 * (charm.scale || 1.0) * globalScale;
-    if (Math.abs(newRadius - this.radius) > 1.0) {
+    if (Math.abs(newRadius - this.radius) > 0.05) {
       const scaleFactor = newRadius / this.radius;
       Matter.Body.scale(this.body, scaleFactor, scaleFactor);
       this.radius = newRadius;
+      Matter.Body.setInertia(this.body, this.body.inertia * 2.8);
     }
+  }
+
+  /**
+   * Returns exact top attachment distance from center of body in canvas pixels.
+   * Directly uses CharmRegistry.getCharmTopOffset for 100% synchronized physics and rendering.
+   */
+  public getTopOffset(): number {
+    return CharmRegistry.getCharmTopOffset(this.charm, this.globalScale);
   }
 
   public updatePhysicsProperties(damping?: number, restitution?: number): void {

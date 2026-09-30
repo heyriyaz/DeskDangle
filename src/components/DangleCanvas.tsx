@@ -18,6 +18,8 @@ export const DangleCanvas: React.FC = () => {
 
   // Settings
   const [settings, updateSettings] = useDangleSettings();
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
 
   // Overlay states
   const [showDebug, setShowDebug] = useState(false);
@@ -46,8 +48,7 @@ export const DangleCanvas: React.FC = () => {
   const lastMetricsUpdateRef = useRef(0);
   const lastBoundsUpdateRef = useRef(0);
   const lastReportedBoundsRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
-  const prevRenderBoxRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
-  const forceFullClearRef = useRef(true);
+
   const currentFpsRef = useRef(60);
   const lastPointerDownTimeRef = useRef(0);
   const pointerDownPosRef = useRef({ x: 0, y: 0 });
@@ -178,30 +179,11 @@ export const DangleCanvas: React.FC = () => {
         if (pBounds.maxY > maxY) maxY = pBounds.maxY;
       }
 
-      const pad = 36;
-      const curBox = {
-        x: Math.max(0, Math.floor(minX - pad)),
-        y: Math.max(0, Math.floor(minY)),
-        width: Math.min(width, Math.ceil(maxX - minX + pad * 2)),
-        height: Math.min(height, Math.ceil(maxY - minY + pad * 2)),
-      };
-
-      // 2. Clear only dirty union rectangle for huge GPU fill-rate performance gains
-      const prevBox = prevRenderBoxRef.current;
-      if (prevBox && !forceFullClearRef.current) {
-        const dirtyX = Math.max(0, Math.min(prevBox.x, curBox.x));
-        const dirtyY = Math.max(0, Math.min(prevBox.y, curBox.y));
-        const dirtyRight = Math.min(width, Math.max(prevBox.x + prevBox.width, curBox.x + curBox.width));
-        const dirtyBottom = Math.min(height, Math.max(prevBox.y + prevBox.height, curBox.y + curBox.height));
-        ctx.clearRect(dirtyX, dirtyY, dirtyRight - dirtyX, dirtyBottom - dirtyY);
-      } else {
-        ctx.clearRect(0, 0, width, height);
-        forceFullClearRef.current = false;
-      }
-      prevRenderBoxRef.current = curBox;
+      // 2. Crystal clear entire transparent canvas every frame to prevent ghosting or trails
+      ctx.clearRect(0, 0, width, height);
 
       // 3. Draw Rope Cord
-      physics.rope.draw(ctx, nodes);
+      physics.rope.draw(ctx, nodes, charmAngle);
 
       // 4. Draw Subtle Top Anchor Slide Handle when hovered near top edge
       if (isNearAnchorRef.current || isHoveredRef.current) {
@@ -217,11 +199,11 @@ export const DangleCanvas: React.FC = () => {
         charmAngle,
         hovered,
         dragging,
-        settings.charmScale
+        physics.charm.globalScale
       );
 
       // 6. Draw Particles (if active and enabled)
-      if (settings.general.particlesEnabled !== false) {
+      if (settingsRef.current.general.particlesEnabled !== false) {
         particleSystemRef.current.draw(ctx);
       }
 
@@ -294,7 +276,7 @@ export const DangleCanvas: React.FC = () => {
     });
 
     const unsubRandomCharm = window.electronAPI?.onRandomCharm(() => {
-      const random = CharmRegistry.getRandomCharm(settings.selectedCharmId);
+      const random = CharmRegistry.getRandomCharm(settingsRef.current.selectedCharmId);
       soundEffects.playCharmSwitchSound();
       updateSettings({ selectedCharmId: random.id });
     });
@@ -323,7 +305,7 @@ export const DangleCanvas: React.FC = () => {
       }
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
         e.preventDefault();
-        const random = CharmRegistry.getRandomCharm(settings.selectedCharmId);
+        const random = CharmRegistry.getRandomCharm(settingsRef.current.selectedCharmId);
         soundEffects.playCharmSwitchSound();
         updateSettings({ selectedCharmId: random.id });
       }

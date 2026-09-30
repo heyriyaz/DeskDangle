@@ -77,7 +77,9 @@ export const AppearanceTab: React.FC = () => {
 
   const filteredCharms = allCharms.filter((c) => {
     if (categoryFilter === 'all') return true;
-    if (categoryFilter === 'builtin') return BUILTIN_CHARMS.some((b) => b.id === c.id);
+    if (categoryFilter === 'cute') return c.category === 'cute';
+    if (categoryFilter === 'heroes') return c.category === 'heroes';
+    if (categoryFilter === 'talismans') return c.category === 'objects' || c.category === 'nature';
     if (categoryFilter === 'custom') return c.category === 'custom' || c.category === 'emoji';
     return true;
   });
@@ -91,11 +93,47 @@ export const AppearanceTab: React.FC = () => {
   const processImageFile = (file: File) => {
     const defaultName = file.name.replace(/\.[^/.]+$/, '');
     setCustomImageName(defaultName);
+    setUploadError(null);
 
     const reader = new FileReader();
     reader.onload = (event) => {
       if (typeof event.target?.result === 'string') {
-        setCustomImagePreview(event.target.result);
+        const rawUrl = event.target.result;
+        const img = new Image();
+        img.onload = () => {
+          // Normalize resolution to max 1024x1024 for instant loading and stability
+          const maxDim = 1024;
+          let w = img.naturalWidth || img.width;
+          let h = img.naturalHeight || img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, w, h);
+            const optimizedUrl = canvas.toDataURL('image/png');
+            CharmRegistry.preloadImage(optimizedUrl);
+            setCustomImagePreview(optimizedUrl);
+          } else {
+            CharmRegistry.preloadImage(rawUrl);
+            setCustomImagePreview(rawUrl);
+          }
+        };
+        img.onerror = () => {
+          setUploadError('Failed to decode image file.');
+        };
+        img.src = rawUrl;
       }
     };
     reader.readAsDataURL(file);
@@ -152,12 +190,15 @@ export const AppearanceTab: React.FC = () => {
       }
     }
 
+    // Pre-cache before activating in physics
+    await CharmRegistry.preloadImage(finalDataUrl);
+
     const newCharm: Charm = {
       id: charmId,
       name: customImageName.trim() || 'Custom Charm',
       category: 'custom',
       scale: customImageScale,
-      anchorOffset: 34,
+      anchorOffset: 42,
       renderType: 'image',
       framing: customImageFraming,
       imageDataUrl: finalDataUrl,
@@ -195,7 +236,7 @@ export const AppearanceTab: React.FC = () => {
         name: customImageName || 'Custom Photo',
         category: 'custom',
         scale: customImageScale,
-        anchorOffset: 34,
+        anchorOffset: 42,
         renderType: 'image',
         framing: customImageFraming,
         imageDataUrl: customImagePreview,
@@ -211,6 +252,7 @@ export const AppearanceTab: React.FC = () => {
   ]);
 
   const ropeColors = [
+    { label: 'Silk Web', value: '#f8fafc' },
     { label: 'Natural Jute', value: '#785338' },
     { label: 'Charcoal', value: '#334155' },
     { label: 'Gold', value: '#eab308' },
@@ -253,11 +295,12 @@ export const AppearanceTab: React.FC = () => {
           {allCharms.length > 1 && (
             <SettingsSegmented
               options={[
-                { id: 'all', label: `All (${allCharms.length})` },
-                { id: 'builtin', label: `Built-in (${BUILTIN_CHARMS.length})` },
-                { id: 'custom', label: `Uploaded (${(settings.customCharms?.length || 0) + (settings.customEmojis?.length || 0)})` },
+                { id: 'all', label: `All` },
+                { id: 'cute', label: `🐱 Cute` },
+                { id: 'heroes', label: `🦸 Heroes` },
+                { id: 'talismans', label: `🧿 Talismans` },
+                { id: 'custom', label: `📁 Uploaded` },
               ]}
-
               value={categoryFilter}
               onChange={(val) => setCategoryFilter(val)}
               size="sm"

@@ -1,0 +1,81 @@
+name: Build & Release DeskDangle
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Test Suite
+        run: npm test
+
+      - name: Build Windows Package
+        run: npm run package:win
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binaries
+          path: |
+            release/*.exe
+            release/*.blockmap
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Test Suite
+        run: npm test
+
+      - name: Build macOS DMGs & Zips
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: |
+          npm run build
+          npx electron-builder --mac dmg zip
+          if [ -d "release/mac-arm64/DeskDangle.app" ]; then
+            codesign --force --deep -s - release/mac-arm64/DeskDangle.app
+            xattr -cr release/mac-arm64/DeskDangle.app
+          fi
+          if [ -d "release/mac/DeskDangle.app" ]; then
+            codesign --force --deep -s - release/mac/DeskDangle.app
+            xattr -cr release/mac/DeskDangle.app
+          fi
+
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-binaries
+          path: |
+            release/*.dmg
+            release/*.zip

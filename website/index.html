@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desk Dangle — Your desktop, a little more alive.</title>
+
+  <!-- SEO & Social Meta Tags -->
+  <meta name="description" content="Beautiful little objects that hang, swing, and quietly live on your screen. Interactive desktop physics companion for Windows 10 & 11.">
+  <meta name="keywords" content="Desk Dangle, desktop companion, desktop charm, windows physics toy, matter.js desktop, windows 11 customizer, custom charms">
+  <meta name="author" content="Riyaz (@heyriyaz)">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Desk Dangle — Your desktop, a little more alive.">
+  <meta property="og:description" content="Beautiful little objects that hang, swing, and quietly live on your screen.">
+  <meta property="og:image" content="assets/icon.png">
+
+  <!-- Favicon & Preloads for Instant Mobile Performance -->
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="preload" as="image" href="assets/charms/evil-eye.png" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/logo.png">
+  <link rel="stylesheet" href="styles.css?v=8.0.0">
+  <style>
+    /* Critical Mobile Rules: Guaranteed to remove notch and top bar on all phones */
+    @media (max-width: 992px) {
+      .top-center-header-stack,
+      .apple-dynamic-notch-wrap,
+      .apple-dynamic-notch,
+      .nav-segmented-pill,
+      .navbar,
+      .brand {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+      }
+      .mobile-menu-btn {
+        display: flex !important;
+      }
+      .top-screen-dangle-wrap {
+        height: 240px !important;
+      }
+      .hero {
+        padding-top: 54px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Center Header Stack: Apple Dynamic Notch Island + Segmented Menu (Desktop Only) -->
+  <div class="top-center-header-stack desktop-only">
+    <!-- Apple Dynamic Notch Island -->
+    <div class="apple-dynamic-notch-wrap">
+      <div class="apple-dynamic-notch" role="status" aria-label="Desk Dangle Status">
+        <div class="notch-compact-content">
+          <span class="notch-live-indicator"></span>
+          <span class="notch-text-compact">just hanging around.</span>
+        </div>
+        <div class="notch-expanded-content">
+          <div class="notch-expanded-info">
+            <span class="notch-expanded-title">made by a designer.</span>
+            <span class="notch-expanded-subtitle">for people with taste.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Segmented Menu (Down from Notch Island with Smooth Sliding Glider) -->
+    <nav class="nav-segmented-pill" id="navSegmentedPill">
+      <div class="pill-glider" id="pillGlider"></div>
+      <a href="#try-demo" class="pill-item is-selected">Try Demo</a>
+      <a href="#gallery" class="pill-item">Gallery</a>
+      <a href="#how-it-works" class="pill-item">How it works</a>
+      <a href="#faq" class="pill-item">FAQ</a>
+    </nav>
+  </div>
+
+  <!-- Mobile Tiny Menu Trigger Icon Button -->
+  <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open navigation menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="4" y1="7" x2="20" y2="7"></line>
+      <line x1="4" y1="12" x2="20" y2="12"></line>
+      <line x1="4" y1="17" x2="20" y2="17"></line>
+    </svg>
+  </button>
+
+  <!-- Mobile Sidebar Drawer & Overlay (Transparent Frosted Glass iOS Level) -->
+  <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
+  <aside class="mobile-sidebar" id="mobileSidebar" aria-label="Mobile Navigation">
+    <div class="mobile-sidebar-header">
+      <a href="#" class="sidebar-brand">
+        <img src="assets/logo.png" alt="Desk Dangle" class="sidebar-brand-img">
+        <span class="sidebar-brand-name">Desk Dangle</span>
+      </a>
+      <button type="button" class="btn-sidebar-close" id="closeSidebarBtn" aria-label="Close menu">&times;</button>
+    </div>
+
+    <div class="mobile-sidebar-body">
+      <nav class="mobile-sidebar-nav">
+        <a href="#try-demo" class="sidebar-nav-item">
+          <span class="sidebar-item-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </span>
+          <span>Try Demo</span>
+        </a>
+        <a href="#gallery" class="sidebar-nav-item">
+          <span class="sidebar-item-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+          </span>
+          <span>Gallery</span>
+        </a>
+        <a href="#how-it-works" class="sidebar-nav-item">
+          <span class="sidebar-item-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </span>
+          <span>How it works</span>
+        </a>
+        <a href="#faq" class="sidebar-nav-item">
+          <span class="sidebar-item-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </span>
+          <span>FAQ</span>
+        </a>
+        <a href="#privacy" class="sidebar-nav-item">
+          <span class="sidebar-item-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </span>
+          <span>Privacy</span>
+        </a>
+      </nav>
+
+      <div class="mobile-sidebar-footer">
+        <a href="https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.1/DeskDangle-v1.0.1-Windows.zip" class="btn-sidebar-download">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
+          </svg>
+          <span>Download for Windows</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==========================================================================
+       NAVIGATION BAR
+       ========================================================================== -->
+  <nav class="navbar">
+    <div class="container nav-content">
+      <a href="#" class="brand">
+        <img src="assets/logo.png" alt="Desk Dangle Official Logo" class="brand-logo-img">
+        <span class="brand-text">Desk Dangle</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Persistent Full-Viewport Hanging Rope Canvas (Always on Screen Across Scrolling) -->
+  <div class="top-screen-dangle-wrap" id="topDangleWrap">
+    <canvas id="heroCanvas"></canvas>
+  </div>
+
+  <!-- ==========================================================================
+       HERO SECTION
+       ========================================================================== -->
+  <header class="hero">
+    <div class="container hero-grid">
+      
+      <!-- Left Column: Copy & CTAs -->
+      <div class="hero-content">
+        <div class="hero-badge-pill">
+          <!-- iOS sparkles SVG -->
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/>
+          </svg>
+          <span>v1.0.1 for Windows is here</span>
+          <span class="badge-tag-official">Official</span>
+        </div>
+
+        <h1 class="hero-title">
+          your desktop<br>
+          was <span class="highlight-orange">getting boring.</span>
+        </h1>
+
+        <p class="hero-tagline">
+          and let it hang around.
+        </p>
+
+        <p class="hero-subtitle">
+          a tiny desktop app that lets you hang cool things on your screen. pick one from the collection or upload literally whatever you want.
+        </p>
+
+        <div class="hero-cta">
+          <div class="hero-btn-row">
+            <a href="https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.1/DeskDangle-v1.0.1-Windows.zip" class="btn-hero-windows">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
+              </svg>
+              <span>Download for Windows</span>
+            </a>
+
+            <!-- Mac Button with Popover Details Attached Directly Inside It -->
+            <div class="mac-btn-wrap" id="macBtnWrap">
+              <button type="button" class="btn-hero-mac-toggle" id="openMacCardBtn" aria-haspopup="true" aria-expanded="false" title="Click for Mac version details">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.96.04-2.16.65-2.84 1.45-.6.69-1.12 1.77-.98 2.82 1.08.08 2.2-.65 2.81-1.4z"/>
+                </svg>
+                <span>Mac version</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="mac-chevron-icon">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+
+              <!-- Mac Details Popover (Opens Directly From The Mac Button) -->
+              <div class="mac-popover" id="macCard" role="dialog" aria-label="Mac Version Details">
+                <div class="mac-popover-top">
+                  <span class="mac-card-badge">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.96.04-2.16.65-2.84 1.45-.6.69-1.12 1.77-.98 2.82 1.08.08 2.2-.65 2.81-1.4z"/>
+                    </svg>
+                    <span>macOS</span>
+                  </span>
+                  <button type="button" class="btn-popover-close" id="closeMacPopoverBtn" aria-label="Close details">&times;</button>
+                </div>
+
+                <h3 class="mac-title">want it on mac?</h3>
+                <p class="mac-desc">
+                  not available yet.<br>
+                  if you'd like a mac version,<br>
+                  let me know.
+                </p>
+                <button type="button" class="btn-mac-vote" id="macVoteBtn">
+                  <span>i want the mac version &rarr;</span>
+                </button>
+                <div class="mac-success-state" id="macSuccessMsg" style="display: none;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff6600" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span>noted! we'll prioritize the mac build.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-meta-text">
+            <span style="display: inline-flex; align-items: center; gap: 5px;">
+              <!-- iOS checkmark.circle.fill -->
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" fill="#ff6600"/>
+                <path d="M8 12.5L10.5 15L16 9.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Free to download</span>
+            </span>
+            <span>&middot;</span>
+            <span>Windows 10 & 11</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Hero Interactive Charm Badge -->
+      <div class="hero-visual">
+        <div class="hero-charm-badge">
+          <span class="badge-dot" style="background: var(--accent-gold);"></span>
+          <span id="heroCharmName">Random Charm</span>
+          <button type="button" id="randomizeCharmBtn" class="btn-shuffle" title="Roll another random charm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 3 21 3 21 8"></polyline>
+              <line x1="4" y1="20" x2="21" y2="3"></line>
+              <polyline points="21 16 21 21 16 21"></polyline>
+              <line x1="15" y1="15" x2="21" y2="21"></line>
+              <line x1="4" y1="4" x2="9" y2="9"></line>
+            </svg>
+            <span>Shuffle</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       INTERACTIVE SANDBOX SECTION
+       ========================================================================== -->
+  <section class="sandbox-section" id="try-demo">
+    <div class="container">
+      <div class="sandbox-card">
+        
+        <!-- Left: Interactive Controls -->
+        <div class="sandbox-left">
+          <div>
+            <div class="sandbox-tag">
+              <!-- iOS sparkles SVG -->
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ff6600" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/>
+              </svg>
+              <span>CUSTOM UPLOAD</span>
+            </div>
+            <h2 class="sandbox-title">yeah, your pet can hang there too.</h2>
+            <p class="sandbox-desc">
+              upload your own image and make your desktop unnecessarily personal.
+            </p>
+          </div>
+
+          <div class="sandbox-controls">
+            <!-- Choose Dangle Avatar Picker -->
+            <div>
+              <div class="control-label">Choose dangle</div>
+              <div class="dangle-avatar-row" id="sandboxAvatarRow">
+                <!-- Dynamically populated by script.js -->
+              </div>
+            </div>
+
+            <!-- Size Slider -->
+            <div>
+              <div class="control-label">Size</div>
+              <div class="slider-control-row">
+                <input type="range" class="custom-slider" id="sandboxSizeSlider" min="60" max="140" step="5" value="115">
+                <span class="slider-val-badge" id="sandboxSizeVal">115%</span>
+              </div>
+            </div>
+
+            <!-- Position Segmented Switch -->
+            <div>
+              <div class="control-label">Position</div>
+              <div class="position-segmented">
+                <button type="button" class="pos-btn" data-pos="left">Left</button>
+                <button type="button" class="pos-btn" data-pos="center">Center</button>
+                <button type="button" class="pos-btn active" data-pos="right">Right</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Real-time Physics Screen -->
+        <div class="sandbox-right">
+          <div class="sandbox-screen">
+            <canvas id="sandboxCanvas"></canvas>
+          </div>
+          <div class="sandbox-hint">
+            <!-- iOS hand drag gesture SVG -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+              <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
+              <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
+              <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+            </svg>
+            <span>Drag to swing</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       "IT BELONGS ON YOUR DESKTOP" GALLERY
+       ========================================================================== -->
+  <section class="gallery-section" id="gallery">
+    <div class="container">
+      <div class="section-title-center">
+        <h2 class="gallery-heading">It belongs on your desktop.</h2>
+        <p class="gallery-subheading">Desk Dangle fits right in, anywhere you are.</p>
+      </div>
+
+      <div class="setups-grid">
+        <!-- Setup 1: Minimal Clean Windows Desktop -->
+        <div class="setup-card">
+          <img src="assets/gallery/gallery-windows-minimal.png" alt="Clean Minimal Windows Desktop" class="setup-card-img" loading="lazy">
+          <div class="setup-charm-overlay charm-pos-center">
+            <div class="setup-rope-line"></div>
+            <img src="assets/charms/glass-heart.png" alt="Pink Glass Heart Charm">
+          </div>
+        </div>
+
+        <!-- Setup 2: Minimalist macOS Desktop -->
+        <div class="setup-card">
+          <img src="assets/gallery/gallery-macos-minimal.png" alt="Minimalist macOS Desktop" class="setup-card-img" loading="lazy">
+          <div class="setup-charm-overlay charm-pos-center">
+            <div class="setup-rope-line"></div>
+            <img src="assets/charms/cherry.png" alt="Ruby Cherries Charm">
+          </div>
+        </div>
+
+        <!-- Setup 3: Windows 10 Classic Blue Desktop -->
+        <div class="setup-card">
+          <img src="assets/gallery/gallery-windows-blue.png" alt="Windows 10 Classic Desktop" class="setup-card-img" loading="lazy">
+          <div class="setup-charm-overlay charm-pos-right">
+            <div class="setup-rope-line"></div>
+            <img src="assets/charms/evil-eye.png" alt="Evil Eye Charm">
+          </div>
+        </div>
+
+        <!-- Setup 4: Kakashi Anime Desktop -->
+        <div class="setup-card">
+          <img src="assets/gallery/gallery-anime-kakashi.png" alt="Kakashi Anime Desktop" class="setup-card-img" loading="lazy">
+          <div class="setup-charm-overlay charm-pos-kakashi">
+            <div class="setup-rope-line"></div>
+            <img src="assets/charms/chonky-cat.png" alt="Chonky Cat Charm">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       HOW IT WORKS
+       ========================================================================== -->
+  <section class="how-it-works-section" id="how-it-works">
+    <div class="container easy-container">
+      <div class="easy-card">
+        
+        <!-- Centered Heading with orange period and underline accent -->
+        <div class="easy-title-wrap">
+          <h2 class="easy-title">
+            it's literally this easy<span class="highlight-orange">.</span>
+          </h2>
+          <div class="easy-title-accent"></div>
+        </div>
+
+        <!-- 3 Connected Steps with Dashed Line -->
+        <div class="easy-steps-wrap">
+          <div class="steps-connecting-dash"></div>
+          
+          <!-- Step 01 -->
+          <div class="easy-step-item">
+            <span class="easy-step-badge">01</span>
+            <div class="easy-step-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+            <h3 class="easy-step-name">download it.</h3>
+            <p class="easy-step-desc">get the app in seconds.</p>
+          </div>
+
+          <!-- Step 02 -->
+          <div class="easy-step-item">
+            <span class="easy-step-badge">02</span>
+            <div class="easy-step-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+              </svg>
+            </div>
+            <h3 class="easy-step-name">pick something.</h3>
+            <p class="easy-step-desc">choose your favorite dangle.</p>
+          </div>
+
+          <!-- Step 03 -->
+          <div class="easy-step-item">
+            <span class="easy-step-badge">03</span>
+            <div class="easy-step-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/>
+                <path d="M19 16v6"/>
+                <path d="M22 19h-6"/>
+              </svg>
+            </div>
+            <h3 class="easy-step-name">let it hang.</h3>
+            <p class="easy-step-desc">and enjoy your new vibe.</p>
+          </div>
+        </div>
+
+        <!-- Bottom Line with Amber Heart -->
+        <p class="easy-final-line">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#ff6600" stroke="#ff6600" stroke-width="1.5">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+          </svg>
+          <span>your desktop is now less boring.</span>
+        </p>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FAQ SECTION
+       ========================================================================== -->
+  <section class="faq-section" id="faq">
+    <div class="container faq-container">
+      <div class="section-header-center">
+        <span class="section-badge">FAQ</span>
+        <h2 class="section-title">questions people actually ask.</h2>
+        <p class="section-subtitle">everything you need to know about the little hanging thing.</p>
+      </div>
+
+      <div class="faq-accordion">
+        <!-- Q1 -->
+        <div class="faq-item active">
+          <button type="button" class="faq-question">
+            <span>what even is this?</span>
+            <span class="faq-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer">
+            <p>tiny things that hang out on your desktop. literally.</p>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="faq-item">
+          <button type="button" class="faq-question">
+            <span>how does it work?</span>
+            <span class="faq-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer">
+            <p>download &rarr; pick something &rarr; let it hang. easy.</p>
+          </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="faq-item">
+          <button type="button" class="faq-question">
+            <span>can i upload my own image?</span>
+            <span class="faq-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer">
+            <p>yep. your pet. your meme. your art. if it's your vibe, hang it.</p>
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="faq-item">
+          <button type="button" class="faq-question">
+            <span>is it actually free?</span>
+            <span class="faq-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer">
+            <p>yep. no subscription. no account. no weird stuff.</p>
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="faq-item">
+          <button type="button" class="faq-question">
+            <span>will it slow down my computer?</span>
+            <span class="faq-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer">
+            <p>it's designed to stay lightweight and mind its own business.</p>
+          </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="faq-item">
+          <button type="button" class="faq-question">
+            <span>can i remove it?</span>
+            <span class="faq-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer">
+            <p>yeah &#128557; close the app whenever you want.</p>
+          </div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="faq-item">
+          <button type="button" class="faq-question">
+            <span>more stuff coming?</span>
+            <span class="faq-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer">
+            <p>probably. if people like it, we keep cooking.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       WHY IT'S FREE
+       ========================================================================== -->
+  <section class="privacy-section" id="privacy">
+    <div class="container free-container">
+      <div class="why-free-card">
+        
+        <!-- Badge -->
+        <div class="free-badge">
+          <!-- Amber Lightning Bolt -->
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="#ff6600" stroke="#ff6600" stroke-width="1">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <span>WHY IT'S FREE</span>
+        </div>
+
+        <!-- Heading -->
+        <h2 class="free-main-title">free.</h2>
+        <p class="free-sub-title">like <span class="highlight-orange">actually</span> free.</p>
+
+        <!-- 3 Feature Pills -->
+        <div class="free-pills-stack">
+          <!-- Item 1: No subscription -->
+          <div class="free-pill-row">
+            <div class="free-pill-icon-circle">
+              <!-- Gift Icon in warm amber -->
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff6600" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                <rect x="2" y="7" width="20" height="5"></rect>
+                <line x1="12" y1="22" x2="12" y2="7"></line>
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+              </svg>
+            </div>
+            <span class="free-pill-text">No subscription.</span>
+          </div>
+
+          <!-- Item 2: No account -->
+          <div class="free-pill-row">
+            <div class="free-pill-icon-circle">
+              <!-- User Icon in warm amber -->
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff6600" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <span class="free-pill-text">No account.</span>
+          </div>
+
+          <!-- Item 3: No free trial -->
+          <div class="free-pill-row">
+            <div class="free-pill-icon-circle">
+              <!-- Smiley Face Icon in warm amber -->
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff6600" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+            </div>
+            <span class="free-pill-text">No free trial waiting to jump-scare you.</span>
+          </div>
+        </div>
+
+        <!-- Supporting text -->
+        <p class="free-action-note">Just download it and have fun.</p>
+
+        <!-- Button -->
+        <a href="https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.1/DeskDangle-v1.0.1-Windows.zip" class="btn-here-take-it" title="Download Desk Dangle for Windows">
+          <span>Here. Take it.</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <!-- Top Row: Brand & Main Credit + Navigation Links -->
+      <div class="footer-main-row">
+        <div class="footer-brand-wrap">
+          <div class="footer-logo-title">
+            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="footer-logo-svg" aria-label="Desk Dangle Logo">
+              <path d="M7 6C7 4.89543 7.89543 4 9 4H18C24.6274 4 30 9.37258 30 16C30 22.6274 24.6274 28 18 28H9C7.89543 28 7 27.1046 7 26V6Z" fill="#141413"/>
+              <rect x="11.5" y="4" width="2" height="15" rx="1" fill="#ffffff"/>
+              <circle cx="12.5" cy="20.5" r="3.5" fill="#ff6600" stroke="#ffffff" stroke-width="1.2"/>
+            </svg>
+            <span class="footer-brand-name">desk dangle</span>
+          </div>
+          <p class="footer-main-credit">made by a designer.</p>
+        </div>
+
+        <nav class="footer-nav" aria-label="Footer Links">
+          <a href="https://github.com/heyriyaz/DeskDangle/releases/download/v1.0.1/DeskDangle-v1.0.1-Windows.zip" class="footer-link">download</a>
+          <a href="https://github.com/heyriyaz/DeskDangle" target="_blank" rel="noopener noreferrer" class="footer-link">github</a>
+          <a href="mailto:heyriodesign@gmail.com" class="footer-link">email</a>
+          <a href="#faq" class="footer-link">faq</a>
+          <a href="#privacy" class="footer-link">privacy</a>
+          <a href="#terms" class="footer-link" id="termsLink">terms</a>
+        </nav>
+      </div>
+
+      <!-- Bottom Row: Copyright & Creator Credit -->
+      <div class="footer-bottom-row">
+        <span class="footer-copyright">&copy; 2026 desk dangle</span>
+        <span class="footer-creator-credit">made with ❤️ by Riyaz</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Terms Modal -->
+  <div class="terms-modal-overlay" id="termsModalOverlay"></div>
+  <div class="terms-modal" id="termsModal" role="dialog" aria-label="Terms of Vibe">
+    <div class="terms-modal-header">
+      <h3 class="terms-title">terms of vibe.</h3>
+      <button type="button" class="btn-terms-close" id="closeTermsBtn" aria-label="Close terms">&times;</button>
+    </div>
+    <div class="terms-modal-body">
+      <p>1. <strong>it's 100% free.</strong> no ads, no trackers, no paywalls.</p>
+      <p>2. <strong>your images stay yours.</strong> custom charms live locally on your computer.</p>
+      <p>3. <strong>zero weird stuff.</strong> just honest physics on your screen.</p>
+      <p>4. <strong>just vibes.</strong></p>
+    </div>
+  </div>
+
+  <script src="script.js?v=7.0.0"></script>
+</body>
+</html>

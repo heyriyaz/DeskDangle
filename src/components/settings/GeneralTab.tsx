@@ -47,12 +47,12 @@ export const GeneralTab: React.FC = () => {
       >
         <SettingsRow
           label="Preset Alignment"
-          subtitle="Snap anchor directly to MacBook Notch or screen edges"
+          subtitle="Snap anchor directly to screen center or edges"
         >
           <SettingsSegmented
             options={[
               { id: 'left', label: 'Left (15%)' },
-              { id: 'center', label: '💻 Notch (50%)' },
+              { id: 'center', label: typeof navigator !== 'undefined' && /Mac/i.test(navigator.userAgent) ? '💻 Notch (50%)' : '💻 Center (50%)' },
               { id: 'right', label: 'Right (85%)' },
             ]}
             value={currentPreset}
@@ -84,7 +84,7 @@ export const GeneralTab: React.FC = () => {
 
       {/* THEME & APPEARANCE GROUP */}
       <SettingsGroup title="Interface Theme">
-        <SettingsRow label="Appearance" subtitle="Match macOS system dark/light appearance or lock a specific theme">
+        <SettingsRow label="Appearance" subtitle="Match system dark/light appearance or lock a specific theme">
           <SettingsSegmented
             options={[
               { id: 'system', label: 'Auto (System)' },

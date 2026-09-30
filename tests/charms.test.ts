@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { BUILTIN_CHARMS, CharmRegistry } from '../src/charms/charmRegistry';
 
 describe('DeskDangle Charm System & Security', () => {
-  it('should include all 10 built-in photorealistic charms', () => {
-    expect(BUILTIN_CHARMS.length).toBe(10);
+  it('should include all 21 built-in photorealistic charms', () => {
+    expect(BUILTIN_CHARMS.length).toBe(21);
 
     const ids = BUILTIN_CHARMS.map((c) => c.id);
     expect(ids).toContain('evil-eye');
@@ -16,6 +16,17 @@ describe('DeskDangle Charm System & Security', () => {
     expect(ids).toContain('banana-cat');
     expect(ids).toContain('chonky-cat');
     expect(ids).toContain('orange-cat');
+    expect(ids).toContain('capybara');
+    expect(ids).toContain('shiba-inu');
+    expect(ids).toContain('baby-panda');
+    expect(ids).toContain('baby-groot');
+    expect(ids).toContain('spiderman');
+    expect(ids).toContain('batman');
+    expect(ids).toContain('joker');
+    expect(ids).toContain('iron-hero');
+    expect(ids).toContain('deadpool');
+    expect(ids).toContain('captain-america');
+    expect(ids).toContain('wolverine');
   });
 
   it('should correctly retrieve charms by ID or fallback safely', () => {
@@ -62,5 +73,17 @@ describe('DeskDangle Charm System & Security', () => {
     expect(isWithinLimit(4.8 * 1024 * 1024)).toBe(true); // 4.8MB -> OK
     expect(isWithinLimit(5.2 * 1024 * 1024)).toBe(false); // 5.2MB -> Reject
     expect(isWithinLimit(15 * 1024 * 1024)).toBe(false); // 15MB -> Reject
+  });
+
+  it('should calculate valid positive top attachment offsets for all 21 charms', () => {
+    for (const charm of BUILTIN_CHARMS) {
+      const offset = CharmRegistry.getCharmTopOffset(charm, 1.0);
+      expect(offset).toBeGreaterThan(30);
+      expect(offset).toBeLessThan(100);
+
+      // Verify scaling scales proportionally
+      const scaledOffset = CharmRegistry.getCharmTopOffset(charm, 1.4);
+      expect(scaledOffset).toBeCloseTo(offset * 1.4, 4);
+    }
   });
 });

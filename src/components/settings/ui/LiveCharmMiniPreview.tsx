@@ -48,13 +48,16 @@ export const LiveCharmMiniPreview: React.FC<LiveCharmMiniPreviewProps> = ({
       const charmX = anchorX + Math.sin(swingAngle) * ropeLength;
       const charmY = anchorY + Math.cos(swingAngle) * ropeLength;
 
+      const previewScale = charmScale * 0.75;
+      const topOffset = CharmRegistry.getCharmTopOffset(charm, previewScale);
+
       // 1. Draw Rope Cord
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(anchorX, anchorY);
       const midX = anchorX + Math.sin(swingAngle * 0.6) * (ropeLength * 0.5);
       const midY = anchorY + Math.cos(swingAngle * 0.6) * (ropeLength * 0.5);
-      ctx.quadraticCurveTo(midX, midY, charmX, charmY - 6);
+      ctx.quadraticCurveTo(midX, midY, charmX, charmY);
       ctx.strokeStyle = ropeSettings.color || '#785338';
       ctx.lineWidth = Math.max(1.2, (ropeSettings.thickness || 1.6) * 0.9);
       ctx.lineCap = 'round';
@@ -66,11 +69,11 @@ export const LiveCharmMiniPreview: React.FC<LiveCharmMiniPreviewProps> = ({
         ctx,
         charm,
         charmX,
-        charmY + 18,
+        charmY + topOffset,
         swingAngle * 1.2,
         false,
         false,
-        charmScale * 0.75
+        previewScale
       );
 
       animRef.current = requestAnimationFrame(loop);

@@ -1,6 +1,6 @@
 // Dangle Type Definitions
 
-export type CharmCategory = 'original' | 'cute' | 'celestial' | 'objects' | 'nature' | 'companions' | 'emoji' | 'custom';
+export type CharmCategory = 'original' | 'cute' | 'heroes' | 'celestial' | 'objects' | 'nature' | 'companions' | 'emoji' | 'custom';
 
 export type CharmRenderType = 'vector' | 'emoji' | 'image';
 
