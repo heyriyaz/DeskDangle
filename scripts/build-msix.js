@@ -18,6 +18,19 @@ const appxDir = path.join(rootDir, 'build', 'appx');
 
 const isStore = process.argv.includes('--store');
 
+// Parse optional CLI overrides or env variables
+function getArg(flag, envVar) {
+  const idx = process.argv.indexOf(flag);
+  if (idx !== -1 && process.argv[idx + 1]) {
+    return process.argv[idx + 1];
+  }
+  return process.env[envVar] || null;
+}
+
+const customPublisher = getArg('--publisher', 'APPX_PUBLISHER');
+const customIdentity = getArg('--identity', 'APPX_IDENTITY');
+const customPubDisplay = getArg('--publisher-display', 'APPX_PUBLISHER_DISPLAY');
+
 console.log('='.repeat(60));
 console.log(` DeskDangle MSIX Packaging Tool [${isStore ? 'STORE SUBMISSION' : 'LOCAL TEST BUILD'}]`);
 console.log('='.repeat(60));
@@ -43,7 +56,7 @@ const buildEnv = { ...process.env };
 
 if (isStore) {
   console.log('\n[Step 3/4] Configuring for Microsoft Store submission...');
-  console.log('Note: Microsoft Store will apply its trusted signature during ingestion.');
+  console.log('Note: Microsoft Store signs the package automatically during ingestion.');
   delete buildEnv.CSC_LINK;
   delete buildEnv.CSC_KEY_PASSWORD;
 } else {
@@ -70,6 +83,16 @@ const builderArgs = [
   'appx'
 ];
 
+if (customPublisher) {
+  builderArgs.push(`-c.appx.publisher="${customPublisher}"`);
+}
+if (customIdentity) {
+  builderArgs.push(`-c.appx.identityName="${customIdentity}"`);
+}
+if (customPubDisplay) {
+  builderArgs.push(`-c.appx.publisherDisplayName="${customPubDisplay}"`);
+}
+
 if (isStore) {
   builderArgs.push('-c.win.signAndEditExecutable=false');
   builderArgs.push('-c.win.signExecutable=false');
@@ -84,10 +107,36 @@ const version = pkgJson.version;
 const expectedAppx = path.join(releaseDir, `DeskDangle-${version}.appx`);
 const expectedMsix = path.join(releaseDir, `DeskDangle-${version}.msix`);
 
-// Always synchronize the signed appx to msix so both packages are identical and signed
-if (fs.existsSync(expectedAppx)) {
-  fs.copyFileSync(expectedAppx, expectedMsix);
-  console.log(`Updated ${path.basename(expectedMsix)} from ${path.basename(expectedAppx)}`);
+// Look for generated appx file
+let foundAppx = null;
+const possibleAppxPaths = [
+  expectedAppx,
+  path.join(releaseDir, `DeskDangle ${version}.appx`),
+  path.join(releaseDir, `DeskDangle-${version}-x64.appx`),
+  path.join(releaseDir, `DeskDangle ${version}-x64.appx`)
+];
+
+for (const p of possibleAppxPaths) {
+  if (fs.existsSync(p)) {
+    foundAppx = p;
+    break;
+  }
+}
+
+if (!foundAppx && fs.existsSync(releaseDir)) {
+  const allAppx = fs.readdirSync(releaseDir).filter(f => f.endsWith('.appx') && f.includes(version));
+  if (allAppx.length > 0) {
+    foundAppx = path.join(releaseDir, allAppx[0]);
+  }
+}
+
+if (foundAppx) {
+  // Ensure both clean standard filenames exist: DeskDangle-${version}.appx and DeskDangle-${version}.msix
+  if (foundAppx !== expectedAppx) {
+    fs.copyFileSync(foundAppx, expectedAppx);
+  }
+  fs.copyFileSync(foundAppx, expectedMsix);
+  console.log(`Generated and synchronized:\n  - ${path.basename(expectedAppx)}\n  - ${path.basename(expectedMsix)}`);
 }
 
 console.log('\n' + '='.repeat(60));
@@ -96,22 +145,20 @@ if (fs.existsSync(expectedMsix)) {
   const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
   console.log(`SUCCESS: Package created!`);
   console.log(`  MSIX Path: ${expectedMsix}`);
-  if (fs.existsSync(expectedAppx)) {
-    console.log(`  APPX Path: ${expectedAppx}`);
-  }
+  console.log(`  APPX Path: ${expectedAppx}`);
   console.log(`  Size: ${sizeMB} MB`);
   console.log(`  Version: ${version}`);
 
   if (!isStore) {
     console.log('\nTo test-install this package locally on Windows:');
-    console.log('  1. Run the test install script:');
-    console.log('     powershell -ExecutionPolicy Bypass -File ./scripts/install-test-msix.ps1');
+    console.log('  npm run install:msix');
     console.log('  OR double-click the .msix file in Windows Explorer (App Installer).');
   } else {
     console.log('\nTo submit this package to Microsoft Store:');
     console.log('  1. Log into Windows Partner Center: https://partner.microsoft.com/dashboard');
     console.log('  2. Create/select your DeskDangle submission.');
-    console.log(`  3. Upload the file: ${expectedMsix}`);
+    console.log(`  3. Upload the package file: ${expectedMsix}`);
+    console.log('  4. Upload store assets from: store-assets/');
   }
 } else {
   console.log('Build completed. Checking release directory:');

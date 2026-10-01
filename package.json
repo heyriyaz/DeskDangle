@@ -15,6 +15,9 @@
     "preview": "vite preview",
     "package": "npm run build && electron-builder --publish never",
     "package:win": "npm run build && electron-builder --win --publish never",
+    "package:msix": "node scripts/build-msix.js",
+    "package:store": "node scripts/build-msix.js --store",
+    "install:msix": "powershell -ExecutionPolicy Bypass -File ./scripts/install-test-msix.ps1",
     "package:mac": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --publish never",
     "package:dmg": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg --publish never",
     "package:zip": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac zip --publish never"
@@ -97,6 +100,15 @@
       "uninstallDisplayName": "DeskDangle ${version}",
       "deleteAppDataOnUninstall": true,
       "runAfterFinish": true
+    },
+    "appx": {
+      "artifactName": "DeskDangle-${version}.${ext}",
+      "backgroundColor": "#141413",
+      "showNameOnTiles": false,
+      "identityName": "Riyaz.DeskDangle",
+      "publisher": "CN=84CCE9A5-1585-4D4A-A911-F08CBC54D25D",
+      "publisherDisplayName": "Riyaz",
+      "customManifestPath": "Package.appxmanifest"
     }
   },
 
