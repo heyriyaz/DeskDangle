@@ -72,39 +72,6 @@ Global hotkeys can be toggled on or off in **Settings > Behavior**:
 
 ---
 
-## 🛠️ Development & Building
-
-### Prerequisites
-- Node.js 20+
-- macOS 12+ or Windows 10/11
-
-### Setup
-```bash
-# Clone the repository
-git clone https://github.com/heyriyaz/DeskDangle.git
-cd DeskDangle
-
-# Install dependencies
-npm install
-
-# Start development overlay
-npm run dev
-
-# Run unit tests
-npm test
-```
-
-### Packaging Binaries
-```bash
-# Package Windows Installer (.exe)
-npm run package:win
-
-# Package macOS App, DMG & Zip
-npm run package:mac
-```
-
----
-
 ## 📄 License & Credits
 - **Created with ❤️ by**: **Riyaz** ([@heyriyaz](https://github.com/heyriyaz))
 - **License**: [MIT License](LICENSE)
