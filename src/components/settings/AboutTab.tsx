@@ -55,7 +55,7 @@ export const AboutTab: React.FC = () => {
         </div>
         <h2 className="apple-about-name">DeskDangle</h2>
         <p className="apple-about-tagline">Tiny charms. A little life on your desktop.</p>
-        <span className="apple-about-version">Version 1.0.1</span>
+        <span className="apple-about-version">Version 2.0.0</span>
       </div>
 
       {/* Product Details */}

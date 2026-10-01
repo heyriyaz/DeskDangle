@@ -107,7 +107,6 @@ npm run package:mac
 
 ## 📄 License & Credits
 - **Created with ❤️ by**: **Riyaz** ([@heyriyaz](https://github.com/heyriyaz))
-- **macOS & Physics Contributor**: **Mani Bharathi** ([@itsmanibharathi](https://github.com/itsmanibharathi))
 - **License**: [MIT License](LICENSE)
 
 Copyright © 2026 DeskDangle. All rights reserved.
