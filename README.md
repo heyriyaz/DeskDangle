@@ -1,79 +1,130 @@
-# DeskDangle 🪀
+<div align="center">
 
-[![Download for Windows](https://img.shields.io/badge/Download-Windows%20Setup%20(.exe)-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/heyriyaz/DeskDangle/releases/download/v2.0.0/DeskDangle-Setup-2.0.0.exe)
-[![Download for macOS DMG](https://img.shields.io/badge/Download-macOS%20(.dmg)-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/heyriyaz/DeskDangle/releases/download/v2.0.0/DeskDangle-2.0.0-Mac.dmg)
-[![Version](https://img.shields.io/badge/Release-v2.0.0-brightgreen?style=for-the-badge)](https://github.com/heyriyaz/DeskDangle/releases/tag/v2.0.0)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+<img src="build/icon.png" alt="DeskDangle Logo" width="96" height="96" style="border-radius: 20px;" />
 
-**Tiny charms. A little life on your desktop.**
+# DeskDangle
 
-DeskDangle is a lightweight, interactive desktop companion and physical charm overlay for **macOS** and **Windows (10/11)**. Photorealistic charms hang from the top edge of your screen, reacting naturally with buttery-smooth 60 FPS Matter.js physics, mouse velocity, sound effects, and interactive delight particles.
+**A playful, high-performance desktop companion & interactive physics charm for macOS and Windows.**
 
----
+[![CI](https://github.com/heyriyaz/DeskDangle/actions/workflows/ci.yml/badge.svg)](https://github.com/heyriyaz/DeskDangle/actions/workflows/ci.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/heyriyaz/DeskDangle?style=flat-square&color=ff6600)](https://github.com/heyriyaz/DeskDangle/releases/latest)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%2010%2B-555555?style=flat-square&logo=apple&logoColor=white)](https://github.com/heyriyaz/DeskDangle/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
-## 🚀 What's New in Version 2.0.0
+<p align="center">
+  <a href="https://github.com/heyriyaz/DeskDangle/releases/download/v2.0.0/DeskDangle-Setup-2.0.0.exe">
+    <img src="https://img.shields.io/badge/Download_for_Windows-Setup_(.exe)-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows" />
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/heyriyaz/DeskDangle/releases/download/v2.0.0/DeskDangle-2.0.0-Mac.dmg">
+    <img src="https://img.shields.io/badge/Download_for_macOS-DMG_(Universal)-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Download for macOS" />
+  </a>
+</p>
 
-- 🍏 **Full macOS Platform Support**: Native support for macOS (Apple Silicon M-series & Intel) alongside Windows 10/11.
-- 🦸 **11 Brand New Charms & Heroes**:
-  - **Marvel Heroes**: Spider-Man, Deadpool, Wolverine, Captain America, Iron Hero, Baby Groot.
-  - **DC Heroes & Villains**: Batman, The Joker.
-  - **Cute Buddies**: Chill Capybara, Shiba Inu, Baby Panda.
-  - **Studio Talismans**: Photorealistic studio Indian Nimbu Mirchi & Turkish Evil Eye talismans.
-- 🧷 **Physical Jump Ring Fixture for Custom Uploads**: Upload any custom picture or sticker — DeskDangle automatically fixtures a physical brass eyelet and centered anchor loop to ensure stable, realistic pendular swings without wobble or ghosting.
-- 🎛️ **Physics Presets**: Switch between **Classic**, **Bouncy**, **Heavy**, and **Space (Zero-G)** presets in real-time.
-- 💨 **Aerodynamic Air Displacement**: Charms gently deflect and swing when your mouse cursor sweeps swiftly past them.
-- ✨ **Interactive Delight Particles**: Shimmering particle bursts emit on fast swings, clicks, and edges.
-- 🔊 **Procedural Audio FX**: Authentic chain clinks, wooden bumps, and chime tones synthesized with the Web Audio API.
-- 💻 **MacBook Notch Snap Alignment**: Automatically senses the MacBook camera notch and centers the anchor point underneath it.
-- 💤 **Ultra-Low Idle Power**: Intelligent settled-state detection drops CPU utilization to virtually 0% when charms come to rest.
+</div>
 
 ---
 
-## 📥 Quick Download & Install
+## 💡 Overview
 
-### Windows 10 / 11
-1. Download **[DeskDangle-Setup-2.0.0.exe](https://github.com/heyriyaz/DeskDangle/releases/download/v2.0.0/DeskDangle-Setup-2.0.0.exe)**.
-2. Run the installer to launch DeskDangle.
-   *(If Windows SmartScreen prompts on first run, click **More info** ➔ **Run anyway**).*
-3. Right-click the charm to open the quick menu or click and drag to swing!
+**DeskDangle** hangs charming, physics-driven companions right from the top edge of your screen or MacBook camera notch. Drag, flick, swing, or gently deflect them with your cursor. 
 
-### macOS (Apple Silicon & Intel)
-1. Download **[DeskDangle-2.0.0-Mac.dmg](https://github.com/heyriyaz/DeskDangle/releases/download/v2.0.0/DeskDangle-2.0.0-Mac.dmg)** or **[DeskDangle-2.0.0-Mac.zip](https://github.com/heyriyaz/DeskDangle/releases/download/v2.0.0/DeskDangle-2.0.0-Mac.zip)**.
-2. Open the DMG and drag **DeskDangle.app** into your `/Applications` folder.
-3. Launch DeskDangle and enjoy your companion hanging from your menu bar or MacBook notch!
+Built with **Matter.js** rigid-body dynamics and hardware-accelerated **HTML5 Canvas**, DeskDangle delivers 60 FPS simulations while keeping background clicks 100% functional.
 
----
+### 🌟 Key Highlights
 
-## ✨ Full Feature Overview
-
-- **🎯 21 Built-in Charms**:
-  - *Cats & Pets*: Banana Cat, Chonky Cat, Orange Cat, Fluffy Kitten, Shiba Inu, Baby Panda, Capybara.
-  - *Hero Pack*: Spider-Man, Batman, Deadpool, Wolverine, Captain America, Iron Hero, Joker, Baby Groot.
-  - *Aesthetic & Talismans*: Nimbu Mirchi, Nazar Evil Eye, Hamsa Hand, Ruby Cherries, Glass Heart, Pink Cassette.
-- **🖼️ Custom Charm Studio**: Drag and drop any transparent PNG, JPG, WebP, or SVG. Choose framing styles (Natural Cutout, Acrylic Charm, Floating Medallion).
-- **🧵 Cord & Rope Physics**: Braided rope, Classic nylon cord, Thread, Gold jewelry chain, or Glowing neon with adjustable length, thickness, and stiffness.
-- **⚡ 60 FPS Physics Engine**: Powered by Matter.js with throw momentum, gravity, air resistance, and multi-monitor edge boundaries.
-- **🪟 Transparent Desktop Overlay**: Frameless and click-through outside the interactive charm hitbox, so it never interrupts your work.
-- **🖥️ Multi-Monitor & Mixed DPI**: Automatically adapts across multi-display setups, Retina scaling, and 4K monitors.
-- **🔒 100% Private & Offline**: Zero analytics, zero tracking, and zero internet connection required.
+- **🎯 21 Photorealistic Charms**: Marvel heroes, DC legends, cute pets, and aesthetic cultural talismans.
+- **🪟 Non-Intrusive Click-Through**: Full click-through underneath the cord; only the charm and anchor capture clicks. Your browser tabs, bookmarks, and windows are never blocked.
+- **🧷 Custom Charm Jump Ring**: Drop in any custom PNG/sticker; DeskDangle fixtures a realistic brass eyelet and centered anchor loop for natural swinging.
+- **⚡ Zero-Idle Battery Efficiency**: Adaptive physics suspension automatically drops CPU usage to <0.1% when settled.
+- **💻 Cross-Platform & Notch-Aware**: Native support for Windows 10/11 and macOS (Apple Silicon M-Series & Intel), with automatic notch centering.
 
 ---
 
-## ⌨️ Global Shortcuts (Configurable)
+## 🎨 Built-in Charm Collection
 
-Global hotkeys can be toggled on or off in **Settings > Behavior**:
+<table>
+  <tr>
+    <td align="center" width="16.6%"><img src="src/assets/charms/spiderman.png" width="60"/><br /><b>Spider-Man</b></td>
+    <td align="center" width="16.6%"><img src="src/assets/charms/batman.png" width="60"/><br /><b>Batman</b></td>
+    <td align="center" width="16.6%"><img src="src/assets/charms/deadpool.png" width="60"/><br /><b>Deadpool</b></td>
+    <td align="center" width="16.6%"><img src="src/assets/charms/wolverine.png" width="60"/><br /><b>Wolverine</b></td>
+    <td align="center" width="16.6%"><img src="src/assets/charms/captain-america.png" width="60"/><br /><b>Captain America</b></td>
+    <td align="center" width="16.6%"><img src="src/assets/charms/iron-hero.png" width="60"/><br /><b>Iron Hero</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="src/assets/charms/capybara.png" width="60"/><br /><b>Capybara</b></td>
+    <td align="center"><img src="src/assets/charms/shiba-inu.png" width="60"/><br /><b>Shiba Inu</b></td>
+    <td align="center"><img src="src/assets/charms/baby-panda.png" width="60"/><br /><b>Baby Panda</b></td>
+    <td align="center"><img src="src/assets/charms/banana-cat.png" width="60"/><br /><b>Banana Cat</b></td>
+    <td align="center"><img src="src/assets/charms/chonky-cat.png" width="60"/><br /><b>Chonky Cat</b></td>
+    <td align="center"><img src="src/assets/charms/fluffy-kitten.png" width="60"/><br /><b>Fluffy Kitten</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="src/assets/charms/evil-eye.png" width="60"/><br /><b>Nazar Evil Eye</b></td>
+    <td align="center"><img src="src/assets/charms/nimbu-mirchi.png" width="60"/><br /><b>Nimbu Mirchi</b></td>
+    <td align="center"><img src="src/assets/charms/hamsa-hand.png" width="60"/><br /><b>Hamsa Hand</b></td>
+    <td align="center"><img src="src/assets/charms/pink-cassette.png" width="60"/><br /><b>Pink Cassette</b></td>
+    <td align="center"><img src="src/assets/charms/glass-heart.png" width="60"/><br /><b>Glass Heart</b></td>
+    <td align="center"><img src="src/assets/charms/cherry.png" width="60"/><br /><b>Ruby Cherries</b></td>
+  </tr>
+</table>
+
+---
+
+## 🛠️ Architecture & Under the Hood
+
+DeskDangle is engineered with clean separation of concerns, secure IPC boundaries, and high-performance physics:
+
+```mermaid
+graph TD
+    A[Electron Main Process] -->|Display Bounds & Multi-Screen| B[Frameless Transparent Overlay Window]
+    B -->|Click-Through Masking| C[OS Window Manager]
+    B -->|ContextIsolation IPC Bridge| D[React UI Layer]
+    D --> E[PhysicsWorld Matter.js Engine]
+    E -->|Verlet Constraints| F[Rope Simulation]
+    E -->|Angular Momentum & Damping| G[Rigid Body Charm]
+    E -->|Interactive Zones| H[HTML5 Canvas Renderer @ 60 FPS]
+    E -->|Velocity Triggers| I[Web Audio Procedural FX]
+    D -->|Local Persistence| J[Offline Settings Store]
+```
+
+### Technical Highlights
+- **Context Isolation & Security**: `nodeIntegration: false`, `contextIsolation: true`, with tightly-typed IPC channels in `preload.ts`.
+- **Compound Hit-Testing**: Instead of a full-screen mouse capture, DeskDangle calculates dynamic bounding rects for the anchor pin (`40x16px`) and the charm body, calling `setIgnoreMouseEvents(true, { forward: true })` outside these zones.
+- **Procedural Audio**: Real-time physical clinks, bumps, and chimes generated dynamically with the Web Audio API (zero audio asset bloat).
+- **100% Offline & Private**: Zero external network requests, zero telemetry, zero analytics.
+
+---
+
+## ⌨️ Global Shortcuts
+
+Configurable in **Settings > Behavior**:
 
 | macOS Shortcut | Windows Shortcut | Action |
 | :--- | :--- | :--- |
-| `Option + Shift + D` | `Alt + Shift + D` | Show / Hide DeskDangle |
+| `Option + Shift + D` | `Alt + Shift + D` | Toggle Visibility (Show / Hide) |
 | `Option + Shift + P` | `Alt + Shift + P` | Pause / Resume Physics |
 | `Option + Shift + R` | `Alt + Shift + R` | Switch to Random Charm |
 | `Option + Shift + S` | `Alt + Shift + S` | Open Settings Window |
 
 ---
 
-## 📄 License & Credits
-- **Created with ❤️ by**: **Riyaz** ([@heyriyaz](https://github.com/heyriyaz))
-- **License**: [MIT License](LICENSE)
+## 🤝 Contributing
 
-Copyright © 2026 DeskDangle. All rights reserved.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on setting up the development environment, running tests, and submitting pull requests.
+
+We are committed to providing a welcoming community. Please see our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+---
+
+## 🔒 Security
+
+For vulnerability disclosure and security policies, please see [SECURITY.md](SECURITY.md).
+
+---
+
+## 📄 License
+
+Distributed under the [MIT License](LICENSE). Copyright © 2026 **Riyaz**.

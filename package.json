@@ -3,9 +3,30 @@
   "productName": "DeskDangle",
   "version": "2.0.0",
   "private": true,
-  "description": "A playful desktop companion and interactive physics charm for Windows",
+  "description": "A playful desktop companion and interactive physics charm for macOS and Windows",
+  "keywords": [
+    "desktop-pet",
+    "companion",
+    "physics-engine",
+    "matter-js",
+    "electron",
+    "react",
+    "typescript",
+    "vite",
+    "windows",
+    "macos",
+    "interactive"
+  ],
   "author": "Riyaz (https://github.com/heyriyaz)",
-  "homepage": "https://github.com/heyriyaz/DeskDangle",
+  "license": "MIT",
+  "homepage": "https://github.com/heyriyaz/DeskDangle#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heyriyaz/DeskDangle.git"
+  },
+  "bugs": {
+    "url": "https://github.com/heyriyaz/DeskDangle/issues"
+  },
   "main": "dist-electron/main.js",
   "scripts": {
     "start": "vite",
