@@ -94,7 +94,7 @@ if (customPubDisplay) {
 }
 
 if (isStore) {
-  builderArgs.push('-c.win.signAndEditExecutable=false');
+  // Skip code signing (Store signs automatically), but keep icon & metadata applied!
   builderArgs.push('-c.win.signExecutable=false');
 }
 
