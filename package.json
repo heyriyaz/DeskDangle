@@ -104,8 +104,7 @@
           ]
         }
       ],
-      "icon": "build/icon.ico",
-      "signAndEditExecutable": false
+      "icon": "build/icon.ico"
     },
     "nsis": {
       "oneClick": true,
@@ -132,7 +131,6 @@
       "customManifestPath": "Package.appxmanifest"
     }
   },
-
   "dependencies": {
     "matter-js": "^0.20.0",
     "react": "^18.3.1",
@@ -146,6 +144,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "electron": "^31.0.2",
     "electron-builder": "^26.15.3",
+    "ffmpeg-static": "^5.3.0",
     "typescript": "^5.5.2",
     "vite": "^5.3.1",
     "vite-plugin-electron": "^0.28.6",
@@ -153,4 +152,3 @@
     "vitest": "^4.1.11"
   }
 }
-
